@@ -1,9 +1,12 @@
 package sample;
 
 import ParsingClasses.ClassNamePrinter;
+import ParsingClasses.ClassNamePrinterReturn;
 import ParsingClasses.MethodNamePrinter;
+import ParsingClasses.MethodNamePrinterReturn;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Controller {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
@@ -33,40 +37,56 @@ public class Controller {
     public static void showFiles(File[] files) throws IOException {
 //        Vector<File> temp = new Vector<File>();
         int i=0;
+//        System.out.println("--------New Call---------");
         for (File file : files) {
             if (file.isDirectory()) {
 //                System.out.println("Directory: " + file.getName());
                 showFiles(file.listFiles()); // Calls same method again.
             } else {
+                System.out.println("---------new file---------");
                 String fileName = file.getName();
                 //kemudian bacalah file nyaa jika .java
-                if(fileName.endsWith(".java")){
+                if(fileName.endsWith(".java")) {
+                    System.out.println("File =" + file.getName());
 //                    temp.add(file);
                     CompilationUnit compilationUnit;
                     Path codePath = Paths.get(file.getAbsolutePath());
+
                     compilationUnit = StaticJavaParser.parse(Files.readString(codePath));
                     VoidVisitor<Void> methodNameVisitor = new MethodNamePrinter();
                     VoidVisitor<Void> classNameVisitor = new ClassNamePrinter();
-                    System.out.println("File ke-"+i);
-                    classNameVisitor.visit(compilationUnit, null);
-                    methodNameVisitor.visit(compilationUnit, null);
+
+
+                    GenericVisitorAdapter<List<String>, Void> classNameReturn = new ClassNamePrinterReturn();
+                    List<String> listClass = classNameReturn.visit(compilationUnit, null);
+
+                    GenericVisitorAdapter<List<String>, Void> methodNameReturn = new MethodNamePrinterReturn();
+                    List<String> listMethod = methodNameReturn.visit(compilationUnit, null);
+                    System.out.println("Nama class=" + listClass.get(0));
+                    System.out.println("Method=" + listMethod.get(0));
+//                    System.out.println(l);
+//                    classNameVisitor.visit(compilationUnit, null);
+//                    methodNameVisitor.visit(compilationUnit, null);
+
                 }
             }
             i++;
         }
+        System.out.println("---------end call---------");
 //        return temp;
     }
 
     public void chooseDirFunc(ActionEvent actionEvent) throws IOException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setInitialDirectory(new File("../../Kuliah/"));
+        directoryChooser.setInitialDirectory(new File("../../Kuliah/Java_Code"));
 
         File selectedDirectory = directoryChooser.showDialog(selectDir.getScene().getWindow());
         if(selectedDirectory != null) {
             path.setText(selectedDirectory.getAbsolutePath());
-//            Vector<File> files =
-                    showFiles(selectedDirectory.listFiles());
+            showFiles(selectedDirectory.listFiles());
 
+
+            //unused temporary
             //loop files from input
 //            for(int i=0; i<files.size(); i++){
 //                CompilationUnit compilationUnit;

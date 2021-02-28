@@ -1,18 +1,16 @@
 package sample;
 
-import ParsingClasses.ClassNamePrinter;
 import ParsingClasses.ClassNamePrinterReturn;
-import ParsingClasses.MethodNamePrinter;
 import ParsingClasses.MethodNamePrinterReturn;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
-import com.github.javaparser.ast.visitor.VoidVisitor;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -32,12 +30,14 @@ public class Controller {
     private Button selectDir;
     @FXML
     private Label path;
+    @FXML
+    private TextField projectName;
 
     public Controller() throws IOException {
     }
 
 
-    public static void showFiles(File[] files) throws IOException {
+    public void showFiles(File[] files) throws IOException {
 //        Vector<File> temp = new Vector<File>();
         FileWriter jsonFile;
         int i=0;
@@ -57,8 +57,6 @@ public class Controller {
                     Path codePath = Paths.get(file.getAbsolutePath());
 
                     compilationUnit = StaticJavaParser.parse(Files.readString(codePath));
-                    VoidVisitor<Void> methodNameVisitor = new MethodNamePrinter();
-                    VoidVisitor<Void> classNameVisitor = new ClassNamePrinter();
 
 
                     GenericVisitorAdapter<List<String>, Void> classNameReturn = new ClassNamePrinterReturn();
@@ -66,11 +64,6 @@ public class Controller {
 
                     GenericVisitorAdapter<List<String>, Void> methodNameReturn = new MethodNamePrinterReturn();
                     List<String> listMethod = methodNameReturn.visit(compilationUnit, null);
-//                    System.out.println("Nama class=" + listClass.get(0));
-//                    System.out.println("Method=" + listMethod.get(0));
-//                    System.out.println(l);
-//                    classNameVisitor.visit(compilationUnit, null);
-//                    methodNameVisitor.visit(compilationUnit, null);
 
                     //Buat object JSON
                     JSONObject obj = new JSONObject();
@@ -86,7 +79,14 @@ public class Controller {
                     obj.put("location", file.getAbsolutePath());
 
                     //create file JSON
-                    jsonFile = new FileWriter("../Hasil/"+fileName.substring(0, fileName.length()-5)+".json");
+                    String pn = projectName.getText();
+                    if(!pn.equals("")){
+                        File newDir = new File("D:/Kuliah/Hasil/"+pn);
+                        boolean dirCreated = newDir.mkdir();
+                        jsonFile = new FileWriter("../Hasil/"+pn+"/"+fileName.substring(0, fileName.length()-5)+".json");
+                    }else{
+                        jsonFile = new FileWriter("../Hasil/"+fileName.substring(0, fileName.length()-5)+".json");
+                    }
                     jsonFile.write(obj.toJSONString());
                     System.out.println("Successfully Copied JSON Object to File...");
                     System.out.println("\nJSON Object: " + obj);

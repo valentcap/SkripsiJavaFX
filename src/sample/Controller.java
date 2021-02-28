@@ -14,8 +14,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.DirectoryChooser;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +39,7 @@ public class Controller {
 
     public static void showFiles(File[] files) throws IOException {
 //        Vector<File> temp = new Vector<File>();
+        FileWriter jsonFile;
         int i=0;
 //        System.out.println("--------New Call---------");
         for (File file : files) {
@@ -47,7 +51,7 @@ public class Controller {
                 String fileName = file.getName();
                 //kemudian bacalah file nyaa jika .java
                 if(fileName.endsWith(".java")) {
-                    System.out.println("File =" + file.getName());
+                    System.out.println("File =" + fileName);
 //                    temp.add(file);
                     CompilationUnit compilationUnit;
                     Path codePath = Paths.get(file.getAbsolutePath());
@@ -62,12 +66,32 @@ public class Controller {
 
                     GenericVisitorAdapter<List<String>, Void> methodNameReturn = new MethodNamePrinterReturn();
                     List<String> listMethod = methodNameReturn.visit(compilationUnit, null);
-                    System.out.println("Nama class=" + listClass.get(0));
-                    System.out.println("Method=" + listMethod.get(0));
+//                    System.out.println("Nama class=" + listClass.get(0));
+//                    System.out.println("Method=" + listMethod.get(0));
 //                    System.out.println(l);
 //                    classNameVisitor.visit(compilationUnit, null);
 //                    methodNameVisitor.visit(compilationUnit, null);
 
+                    //Buat object JSON
+                    JSONObject obj = new JSONObject();
+                    //JSON Arrays
+                    JSONArray classes = new JSONArray();
+                    for(int a=0; a<listClass.size(); a++)
+                        classes.add("ClassName: "+listClass.get(a));
+                    JSONArray methods = new JSONArray();
+                    for(int a=0; a<listMethod.size(); a++)
+                        methods.add("Method: "+listMethod.get(a));
+                    obj.put("class",classes);
+                    obj.put("Methods", methods);
+                    obj.put("location", file.getAbsolutePath());
+
+                    //create file JSON
+                    jsonFile = new FileWriter("../Hasil/"+fileName.substring(0, fileName.length()-5)+".json");
+                    jsonFile.write(obj.toJSONString());
+                    System.out.println("Successfully Copied JSON Object to File...");
+                    System.out.println("\nJSON Object: " + obj);
+                    jsonFile.flush();
+                    jsonFile.close();
                 }
             }
             i++;
@@ -78,7 +102,7 @@ public class Controller {
 
     public void chooseDirFunc(ActionEvent actionEvent) throws IOException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setInitialDirectory(new File("../../Kuliah/Java_Code"));
+        directoryChooser.setInitialDirectory(new File("../Java_Code"));
 
         File selectedDirectory = directoryChooser.showDialog(selectDir.getScene().getWindow());
         if(selectedDirectory != null) {

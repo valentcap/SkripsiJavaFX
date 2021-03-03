@@ -1,19 +1,25 @@
 package sample;
 
+import ParsingClasses.ClassImplementedPrinterReturn;
 import ParsingClasses.ClassNamePrinterReturn;
+import ParsingClasses.ClassParentPrinterReturn;
 import ParsingClasses.MethodNamePrinterReturn;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.visitor.GenericListVisitorAdapter;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import javafx.stage.Stage;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,15 +33,16 @@ public class Controller {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
 
     @FXML
-    private Button selectDir;
+    private Button btnSelectDir;
     @FXML
     private Label path;
     @FXML
     private TextField projectName;
+    @FXML
+    private Button btnSearch;
 
     public Controller() throws IOException {
     }
-
 
     public void showFiles(File[] files) throws IOException {
 //        Vector<File> temp = new Vector<File>();
@@ -47,36 +54,73 @@ public class Controller {
 //                System.out.println("Directory: " + file.getName());
                 showFiles(file.listFiles()); // Calls same method again.
             } else {
-                System.out.println("---------new file---------");
+//                System.out.println("---------new file---------");
                 String fileName = file.getName();
                 //kemudian bacalah file nyaa jika .java
                 if(fileName.endsWith(".java")) {
-                    System.out.println("File =" + fileName);
-//                    temp.add(file);
                     CompilationUnit compilationUnit;
                     Path codePath = Paths.get(file.getAbsolutePath());
 
                     compilationUnit = StaticJavaParser.parse(Files.readString(codePath));
 
-
-                    GenericVisitorAdapter<List<String>, Void> classNameReturn = new ClassNamePrinterReturn();
+                    //parse nama class
+                    GenericListVisitorAdapter<String, Void> classNameReturn = new ClassNamePrinterReturn();
                     List<String> listClass = classNameReturn.visit(compilationUnit, null);
-
-                    GenericVisitorAdapter<List<String>, Void> methodNameReturn = new MethodNamePrinterReturn();
+                    //parse nama methods
+                    GenericListVisitorAdapter <String, Void> methodNameReturn = new MethodNamePrinterReturn();
                     List<String> listMethod = methodNameReturn.visit(compilationUnit, null);
+                    //parse parent class (jika ada)
+                    GenericVisitorAdapter<List<String>, Void> classParentReturn = new ClassParentPrinterReturn();
+                    List<String> classParent = classParentReturn.visit(compilationUnit, null);
+//                  //parse implemented class / classes (jika ada)
+                    GenericListVisitorAdapter<String, Void> classImplementedReturn = new ClassImplementedPrinterReturn();
+                    List<String> listImplemented = classImplementedReturn.visit(compilationUnit, null);
+
+
 
                     //Buat object JSON
                     JSONObject obj = new JSONObject();
-                    //JSON Arrays
+
                     JSONArray classes = new JSONArray();
-                    for(int a=0; a<listClass.size(); a++)
-                        classes.add("ClassName: "+listClass.get(a));
+                    if(listClass.size() > 0) {
+                        for(int a=0; a<listClass.size(); a+=3){
+                            System.out.println(listClass.size());
+                            JSONObject o = new JSONObject();
+                            o.put("ClassName", listClass.get(a));
+                            o.put("LineNum", listClass.get(a+1));
+                            o.put("ColNum", listClass.get(a+2));
+                            System.out.println(o);
+//                            String result = o.toJSONString();
+                            classes.put(o);
+                        }
+                    }
+
                     JSONArray methods = new JSONArray();
-                    for(int a=0; a<listMethod.size(); a++)
-                        methods.add("Method: "+listMethod.get(a));
-                    obj.put("class",classes);
-                    obj.put("Methods", methods);
-                    obj.put("location", file.getAbsolutePath());
+                    if(listMethod.size() > 0){
+                        for(int a=0; a<listMethod.size(); a++)
+                            methods.put(listMethod.get(a));
+                    }
+
+                    JSONArray implementedArray = new JSONArray();
+                    if(listImplemented.size() > 0){
+                        for(int a=0; a<listImplemented.size(); a++)
+                            implementedArray.put(listImplemented.get(a));
+                    }
+
+
+                    //tambahkan ke JSON hasil
+                    if(classParent.get(0) != null){
+                        obj.put("Parent", classParent.get(0));
+                    }
+                    if(methods.length()>0)
+                        obj.put("Methods", methods);
+                    if(implementedArray.length()>0)
+                        obj.put("Implements", implementedArray);
+                    if(classes.length()>0)
+                        obj.put("Classes",classes);
+
+
+                    obj.toString(4);
 
                     //create file JSON
                     String pn = projectName.getText();
@@ -87,8 +131,7 @@ public class Controller {
                     }else{
                         jsonFile = new FileWriter("../Hasil/"+fileName.substring(0, fileName.length()-5)+".json");
                     }
-                    jsonFile.write(obj.toJSONString());
-                    System.out.println("Successfully Copied JSON Object to File...");
+                    jsonFile.write(obj.toString(4));
                     System.out.println("\nJSON Object: " + obj);
                     jsonFile.flush();
                     jsonFile.close();
@@ -96,7 +139,7 @@ public class Controller {
             }
             i++;
         }
-        System.out.println("---------end call---------");
+//        System.out.println("---------end call---------");
 //        return temp;
     }
 
@@ -104,7 +147,7 @@ public class Controller {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(new File("../Java_Code"));
 
-        File selectedDirectory = directoryChooser.showDialog(selectDir.getScene().getWindow());
+        File selectedDirectory = directoryChooser.showDialog(btnSelectDir.getScene().getWindow());
         if(selectedDirectory != null) {
             path.setText(selectedDirectory.getAbsolutePath());
             showFiles(selectedDirectory.listFiles());
@@ -134,5 +177,17 @@ public class Controller {
         else {
             System.out.println("tidak memilih directory");
         }
+    }
+
+    public void goToSearch(ActionEvent actionEvent) throws IOException {
+        Stage stage;
+        Parent root;
+
+        stage = (Stage) btnSearch.getScene().getWindow();
+        root = FXMLLoader.load(getClass().getResource("Search.fxml"));
+
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.show();
     }
 }

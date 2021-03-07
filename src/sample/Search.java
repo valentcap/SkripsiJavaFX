@@ -33,17 +33,22 @@ public class Search {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("search.fxml"));
 //    final SolrClient client;
 
+    //flags
+    //apakah sudah run solr?
+    private int isStartSolr = 0;
+
 
     @FXML
     private Button btnBack;
     @FXML
     private TextField keyword;
 
+        //constructor
     public Search() throws IOException, SolrServerException, ParseException {
 //        client = this.getSolrClient();
-        this.addDocument();
+//        this.addDocument();
 //        this.searching();
-        this.getSolrCores();
+//        this.getSolrCores();
     }
 
 
@@ -107,43 +112,56 @@ public class Search {
 
     }
 
-    public void startSolr() throws IOException {
+    public void startSolr() throws IOException, ParseException {
         Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"D: && cd solr-8.6.0\\bin && solr start -p 8983\"");
 //        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"D: && cd solr-8.6.0\\bin && solr start -e cloud\"");
+        this.isStartSolr = 1;
     }
 
     public void getSolrCores() throws IOException, ParseException {
-        URL url = new URL("http://localhost:8983/solr/admin/cores?action=STATUS");
-        HttpURLConnection getCoreCon = (HttpURLConnection) url.openConnection();
-        getCoreCon.setRequestMethod("GET");
-        getCoreCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        if(this.isStartSolr == 1){
+            URL url = new URL("http://localhost:8983/solr/admin/cores?action=STATUS");
+            HttpURLConnection getCoreCon = (HttpURLConnection) url.openConnection();
+            getCoreCon.setRequestMethod("GET");
+            getCoreCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-        getCoreCon.setUseCaches(false);
-        getCoreCon.setDoOutput(true);
+            getCoreCon.setUseCaches(false);
+            getCoreCon.setDoOutput(true);
 
-        DataOutputStream wr = new DataOutputStream(
-                getCoreCon.getOutputStream()
-        );
+            DataOutputStream wr = new DataOutputStream(
+                    getCoreCon.getOutputStream()
+            );
 //        wr.writeBytes(param);
-        wr.close();
+            wr.close();
 
-        InputStream is = getCoreCon.getInputStream();
-        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while((line = rd.readLine()) != null) {
-            response.append(line);
-            response.append("\r");
-        }
-        JSONParser parser = new JSONParser();
-        JSONObject json = (JSONObject) parser.parse(response.toString());
-        json = (JSONObject) json.get("status");
-        Set<String> x = json.keySet();
-        for(int i=0; i<json.size(); i++){
-            System.out.println("core ke-"+i+"= "+x.toArray()[i]);
-        }
+            InputStream is = getCoreCon.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while((line = rd.readLine()) != null) {
+                response.append(line);
+                response.append("\r");
+            }
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(response.toString());
+            json = (JSONObject) json.get("status");
+            Set<String> x = json.keySet();
+            for(int i=0; i<json.size(); i++){
+                System.out.println("core/collection ke-"+i+"= "+x.toArray()[i]);
+            }
 
-        rd.close();
+            rd.close();
+        }else{
+            System.out.println("Belum run SOLR");
+        }
+    }
+
+    public void deleteDocuments() throws IOException, SolrServerException {
+        String urlString = "http://localhost:8983/solr/project";
+        SolrClient solrClient = new HttpSolrClient.Builder(urlString).build();
+        //delete all documents
+        solrClient.deleteByQuery("*");
+        solrClient.commit();
     }
 
 

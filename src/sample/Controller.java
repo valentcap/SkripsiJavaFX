@@ -61,80 +61,91 @@ public class Controller {
                     CompilationUnit compilationUnit;
                     Path codePath = Paths.get(file.getAbsolutePath());
 
-                    compilationUnit = StaticJavaParser.parse(Files.readString(codePath));
+                    try{
+                        compilationUnit = StaticJavaParser.parse(Files.readString(codePath));
 
-                    //parse nama class
-                    GenericListVisitorAdapter<String, Void> classNameReturn = new ClassNamePrinterReturn();
-                    List<String> listClass = classNameReturn.visit(compilationUnit, null);
-                    //parse nama methods
-                    GenericListVisitorAdapter <String, Void> methodNameReturn = new MethodNamePrinterReturn();
-                    List<String> listMethod = methodNameReturn.visit(compilationUnit, null);
-                    //parse parent class (jika ada)
-                    GenericVisitorAdapter<List<String>, Void> classParentReturn = new ClassParentPrinterReturn();
-                    List<String> classParent = classParentReturn.visit(compilationUnit, null);
+//                        cacat parsing -> jika ada switch case
+//                                tidak dapat parsing dengan benar dengan javaparser
+
+
+                        //parse nama class
+                        GenericListVisitorAdapter<String, Void> classNameReturn = new ClassNamePrinterReturn();
+                        List<String> listClass = classNameReturn.visit(compilationUnit, null);
+                        //parse nama methods
+                        GenericListVisitorAdapter <String, Void> methodNameReturn = new MethodNamePrinterReturn();
+                        List<String> listMethod = methodNameReturn.visit(compilationUnit, null);
+                        //parse parent class (jika ada)
+                        GenericVisitorAdapter<List<String>, Void> classParentReturn = new ClassParentPrinterReturn();
+                        List<String> classParent = classParentReturn.visit(compilationUnit, null);
 //                  //parse implemented class / classes (jika ada)
-                    GenericListVisitorAdapter<String, Void> classImplementedReturn = new ClassImplementedPrinterReturn();
-                    List<String> listImplemented = classImplementedReturn.visit(compilationUnit, null);
+                        GenericListVisitorAdapter<String, Void> classImplementedReturn = new ClassImplementedPrinterReturn();
+                        List<String> listImplemented = classImplementedReturn.visit(compilationUnit, null);
 
 
 
-                    //Buat object JSON
-                    JSONObject obj = new JSONObject();
+                        //Buat object JSON
+                        JSONObject obj = new JSONObject();
 
-                    JSONArray classes = new JSONArray();
-                    if(listClass.size() > 0) {
-                        for(int a=0; a<listClass.size(); a+=3){
-                            System.out.println(listClass.size());
-                            JSONObject o = new JSONObject();
-                            o.put("ClassName", listClass.get(a));
-                            o.put("LineNum", listClass.get(a+1));
-                            o.put("ColNum", listClass.get(a+2));
-                            System.out.println(o);
+                        JSONArray classes = new JSONArray();
+                        if(listClass.size() > 0) {
+                            for(int a=0; a<listClass.size(); a+=3){
+                                System.out.println(listClass.size());
+                                JSONObject o = new JSONObject();
+                                o.put("ClassName", listClass.get(a));
+                                o.put("LineNum", listClass.get(a+1));
+                                o.put("ColNum", listClass.get(a+2));
+                                System.out.println(o);
 //                            String result = o.toJSONString();
-                            classes.put(o);
+                                classes.put(o);
+                            }
                         }
+
+                        JSONArray methods = new JSONArray();
+                        if(listMethod.size() > 0){
+                            for(int a=0; a<listMethod.size(); a++)
+                                methods.put(listMethod.get(a));
+                        }
+
+                        JSONArray implementedArray = new JSONArray();
+                        if(listImplemented.size() > 0){
+                            for(int a=0; a<listImplemented.size(); a++)
+                                implementedArray.put(listImplemented.get(a));
+                        }
+
+
+                        //tambahkan ke JSON hasil
+                        if(classParent != null && classParent.get(0) != null){
+                            obj.put("Parent", classParent.get(0));
+                        }
+                        if(methods != null && methods.length()>0)
+                            obj.put("Methods", methods);
+                        if(implementedArray != null && implementedArray.length()>0)
+                            obj.put("Implements", implementedArray);
+                        if(classes != null && classes.length()>0)
+                            obj.put("Classes",classes);
+
+                        obj.put("Location", codePath.toString());
+
+                        obj.toString(4);
+
+                        //create file JSON
+                        String pn = projectName.getText();
+                        if(!pn.equals("")){
+                            File newDir = new File("D:/Kuliah/Hasil/"+pn);
+                            boolean dirCreated = newDir.mkdir();
+                            jsonFile = new FileWriter("../Hasil/"+pn+"/"+fileName.substring(0, fileName.length()-5)+".json");
+                        }else{
+                            jsonFile = new FileWriter("../Hasil/"+fileName.substring(0, fileName.length()-5)+".json");
+                        }
+                        jsonFile.write(obj.toString(4));
+                        System.out.println("\nJSON Object saved to: " + obj.get("Location"));
+                        jsonFile.flush();
+                        jsonFile.close();
+                    }catch (Exception e){
+                        System.out.println("Exception Caught");
                     }
 
-                    JSONArray methods = new JSONArray();
-                    if(listMethod.size() > 0){
-                        for(int a=0; a<listMethod.size(); a++)
-                            methods.put(listMethod.get(a));
-                    }
 
-                    JSONArray implementedArray = new JSONArray();
-                    if(listImplemented.size() > 0){
-                        for(int a=0; a<listImplemented.size(); a++)
-                            implementedArray.put(listImplemented.get(a));
-                    }
-
-
-                    //tambahkan ke JSON hasil
-                    if(classParent.get(0) != null){
-                        obj.put("Parent", classParent.get(0));
-                    }
-                    if(methods.length()>0)
-                        obj.put("Methods", methods);
-                    if(implementedArray.length()>0)
-                        obj.put("Implements", implementedArray);
-                    if(classes.length()>0)
-                        obj.put("Classes",classes);
-
-
-                    obj.toString(4);
-
-                    //create file JSON
-                    String pn = projectName.getText();
-                    if(!pn.equals("")){
-                        File newDir = new File("D:/Kuliah/Hasil/"+pn);
-                        boolean dirCreated = newDir.mkdir();
-                        jsonFile = new FileWriter("../Hasil/"+pn+"/"+fileName.substring(0, fileName.length()-5)+".json");
-                    }else{
-                        jsonFile = new FileWriter("../Hasil/"+fileName.substring(0, fileName.length()-5)+".json");
-                    }
-                    jsonFile.write(obj.toString(4));
-                    System.out.println("\nJSON Object: " + obj);
-                    jsonFile.flush();
-                    jsonFile.close();
                 }
             }
             i++;

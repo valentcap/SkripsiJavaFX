@@ -20,5 +20,6 @@
        <Button fx:id="btnStartSolr" layoutX="81.0" layoutY="14.0" mnemonicParsing="false" onAction="#startSolr" text="Start SOLR" GridPane.rowIndex="1" />
       <Button layoutX="374.0" layoutY="275.0" mnemonicParsing="false" onAction="#searching" text="Search" />
       <TextField fx:id="keyword" layoutX="326.0" layoutY="233.0" promptText="keyword" />
+      <Button layoutX="182.0" layoutY="14.0" mnemonicParsing="false" onAction="#deleteDocuments" text="Delete Docs" />
    </children>
 </AnchorPane>

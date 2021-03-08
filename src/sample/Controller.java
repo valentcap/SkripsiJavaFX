@@ -45,16 +45,12 @@ public class Controller {
     }
 
     public void showFiles(File[] files) throws IOException {
-//        Vector<File> temp = new Vector<File>();
         FileWriter jsonFile;
         int i=0;
-//        System.out.println("--------New Call---------");
         for (File file : files) {
             if (file.isDirectory()) {
-//                System.out.println("Directory: " + file.getName());
                 showFiles(file.listFiles()); // Calls same method again.
             } else {
-//                System.out.println("---------new file---------");
                 String fileName = file.getName();
                 //kemudian bacalah file nyaa jika .java
                 if(fileName.endsWith(".java")) {
@@ -89,12 +85,10 @@ public class Controller {
                         JSONArray classes = new JSONArray();
                         if(listClass.size() > 0) {
                             for(int a=0; a<listClass.size(); a+=3){
-                                System.out.println(listClass.size());
                                 JSONObject o = new JSONObject();
                                 o.put("ClassName", listClass.get(a));
                                 o.put("LineNum", listClass.get(a+1));
                                 o.put("ColNum", listClass.get(a+2));
-                                System.out.println(o);
 //                            String result = o.toJSONString();
                                 classes.put(o);
                             }
@@ -102,8 +96,24 @@ public class Controller {
 
                         JSONArray methods = new JSONArray();
                         if(listMethod.size() > 0){
-                            for(int a=0; a<listMethod.size(); a++)
-                                methods.put(listMethod.get(a));
+                            for(int a=0; a<listMethod.size(); a+=2) {
+                                JSONObject o = new JSONObject();
+                                o.put("MethodName", listMethod.get(a));
+                                String listParamString = listMethod.get(a+1);
+//                                listParamString = listParamString.replace(" ", "");
+                                listParamString = listParamString.replace("[", "");
+                                listParamString = listParamString.replace("]", "");
+                                String[] listParam;
+                                listParam = listParamString.split(",");
+                                JSONArray params = new JSONArray();
+                                for (int z=0; z<listParam.length; z++) {
+                                    params.put(listParam[z]);
+                                }
+                                o.put("MethodParams", params);
+                                System.out.println("object di put"+ o);
+                                methods.put(o);
+                            }
+
                         }
 
                         JSONArray implementedArray = new JSONArray();
@@ -143,6 +153,7 @@ public class Controller {
                         jsonFile.close();
                     }catch (Exception e){
                         System.out.println("Exception Caught");
+                        System.out.println(e.toString());
                     }
 
 
@@ -150,8 +161,7 @@ public class Controller {
             }
             i++;
         }
-//        System.out.println("---------end call---------");
-//        return temp;
+
     }
 
     public void chooseDirFunc(ActionEvent actionEvent) throws IOException {

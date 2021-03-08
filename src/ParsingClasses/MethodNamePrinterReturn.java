@@ -11,8 +11,11 @@ public class MethodNamePrinterReturn extends GenericListVisitorAdapter<String, V
     public List<String> visit(final MethodDeclaration md, final Void arg) {
         List<String> res = new ArrayList<>();
         super.visit(md, arg);
-        String x = md.getNameAsString();
-        res.add(x);
+//        System.out.println("Method params="+ md.getParameters());
+        String methodName = md.getNameAsString();
+        String methodParam = md.getParameters().toString();
+        res.add(methodName);
+        res.add(methodParam);
         return  res;
     }
 }

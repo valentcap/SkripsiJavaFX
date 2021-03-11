@@ -12,7 +12,7 @@ public class ClassNamePrinterReturn extends GenericListVisitorAdapter<String, Vo
     public List<String> visit(final ClassOrInterfaceDeclaration ci,final Void arg) {
         super.visit(ci, arg);
         String x = ci.getNameAsString();
-        System.out.println(ci.isClassOrInterfaceDeclaration());
+//        System.out.println(ci.isClassOrInterfaceDeclaration());
         String lineNum = String.valueOf(ci.getName().getBegin().get().line);
         String colNum = String.valueOf(ci.getName().getBegin().get().column);
         res.add(x);

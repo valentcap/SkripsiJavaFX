@@ -2,6 +2,7 @@ package ParsingClasses;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.GenericListVisitorAdapter;
@@ -67,6 +68,27 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
             implementedArr.put(implementedTypes.get(i).getNameAsString());
         }
         obj.put("Implements", implementedArr);
+
+        //constructor
+        JSONArray arrConstructor = new JSONArray();
+
+//        System.out.println("Method punya "+ci.getNameAsString()+": "+ci.getMethods().size());
+        List<ConstructorDeclaration> constructors = ci.getConstructors();
+        for(int i=0; i<ci.getConstructors().size(); i++){
+            JSONObject objConstructor = new JSONObject();
+            JSONArray params = new JSONArray();
+//            System.out.println(constructors.get(i).getNameAsString());
+            constructors.get(i).getParameters();
+            int paramSize = constructors.get(i).getParameters().size();
+
+            for(int j=0; j<paramSize; j++){
+//                System.out.println(methods.get(i).getParameters().get(j));
+                params.put(constructors.get(i).getParameters().get(j));
+            }
+            objConstructor.put("Params", params);
+            arrConstructor.put(objConstructor);
+        }
+        obj.put("Constructors", arrConstructor);
 
         //constructors
         //To Be Added

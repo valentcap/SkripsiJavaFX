@@ -9,12 +9,19 @@ import com.github.javaparser.ast.visitor.GenericListVisitorAdapter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
     //    List<String> res = new ArrayList<String>();
     List<JSONObject> res = new ArrayList<>();
+    Path codePath;
+
+    public FileParser(Path codePath){
+        this.codePath = codePath;
+    }
+
     @Override
     public List<JSONObject> visit(final ClassOrInterfaceDeclaration ci,final Void arg) {
         super.visit(ci, arg);
@@ -36,14 +43,16 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         for(int i=0; i<ci.getMethods().size(); i++){
             JSONObject objMethods = new JSONObject();
             JSONArray params = new JSONArray();
-//            System.out.println(methods.get(i).getNameAsString());
             objMethods.put("MethodName" ,methods.get(i).getNameAsString());
+            //params
             int paramSize = methods.get(i).getParameters().size();
-
             for(int j=0; j<paramSize; j++){
-//                System.out.println(methods.get(i).getParameters().get(j));
                 params.put(methods.get(i).getParameters().get(j));
             }
+            //return value
+            objMethods.put("MethodReturnType", methods.get(i).getType().toString());
+//            System.out.println(methods.get(i).getNameAsString()+": "+methods.get(i).getType().toString());
+
             objMethods.put("MethodParams", params);
             arrMethods.put(objMethods);
         }
@@ -69,7 +78,7 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         }
         obj.put("Implements", implementedArr);
 
-        //constructor
+        //constructors
         JSONArray arrConstructor = new JSONArray();
 
 //        System.out.println("Method punya "+ci.getNameAsString()+": "+ci.getMethods().size());
@@ -85,16 +94,16 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
 //                System.out.println(methods.get(i).getParameters().get(j));
                 params.put(constructors.get(i).getParameters().get(j));
             }
+//            JSONArray sub = new JSONArray();
+//            sub.put(params);
+//            objConstructor.put("Params", sub);
             objConstructor.put("Params", params);
             arrConstructor.put(objConstructor);
         }
         obj.put("Constructors", arrConstructor);
 
-        //constructors
-        //To Be Added
-
         //location
-        //to be added
+        obj.put("Location", this.codePath.toString());
 
 //        res.add(x);
 //        res.add(lineNum);

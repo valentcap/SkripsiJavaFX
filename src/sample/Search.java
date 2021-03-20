@@ -33,10 +33,6 @@ public class Search {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("search.fxml"));
 //    final SolrClient client;
 
-    //flags
-    //apakah sudah run solr?
-    private int isStartSolr = 0;
-
 
     @FXML
     private Button btnBack;
@@ -115,11 +111,9 @@ public class Search {
     public void startSolr() throws IOException, ParseException {
         Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"D: && cd solr-8.6.0\\bin && solr start -p 8983\"");
 //        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"D: && cd solr-8.6.0\\bin && solr start -e cloud\"");
-        this.isStartSolr = 1;
     }
 
     public void getSolrCores() throws IOException, ParseException {
-        if(this.isStartSolr == 1){
             URL url = new URL("http://localhost:8983/solr/admin/cores?action=STATUS");
             HttpURLConnection getCoreCon = (HttpURLConnection) url.openConnection();
             getCoreCon.setRequestMethod("GET");
@@ -151,9 +145,6 @@ public class Search {
             }
 
             rd.close();
-        }else{
-            System.out.println("Belum run SOLR");
-        }
     }
 
     public void deleteDocuments() throws IOException, SolrServerException {

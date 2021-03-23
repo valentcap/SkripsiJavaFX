@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class Controller implements Initializable {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
@@ -46,6 +45,8 @@ public class Controller implements Initializable {
     private Button btnSearch;
     @FXML
     private Label noCoreError;
+    @FXML
+    private TextField indexingPath;
 
     private String installLocation;
     private String parsingResultLocation;
@@ -56,16 +57,16 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
-            Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"D: && cd solr-8.6.0\\bin && solr start -p 8983\"");
-            TimeUnit.SECONDS.sleep(5);
-            this.getSolrCores();
+            this.startSolr();
+//            this.getSolrCores();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
+    }
+
+    public void startSolr() throws IOException {
+        //start solr
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd solr-8.6.0\\bin && solr start -p 8983\"");
     }
 
     public void getSettings(){
@@ -127,9 +128,27 @@ public class Controller implements Initializable {
                         if(!pn.equals("")){
                             File newDir = new File(this.parsingResultLocation+"/"+pn);
                             boolean dirCreated = newDir.mkdir();
-                            jsonFile = new FileWriter(this.parsingResultLocation+"/"+pn+"/"+fileName.substring(0, fileName.length()-5)+".json");
+                            jsonFile = new FileWriter(this.parsingResultLocation+"/"+pn+"/"+fileName.substring(0, fileName.length() - 5) + ".json");
+//                            File cek = new File(this.parsingResultLocation+"/"+pn+"/"+fileName.substring(0, fileName.length()-5)+".json");
+//                            if(!cek.exists()) {
+//                                jsonFile = new FileWriter(this.parsingResultLocation+"/"+pn+"/"+fileName.substring(0, fileName.length() - 5) + ".json");
+//                                System.out.println(cek.getAbsolutePath());
+//                            }
+//                            else {
+//                                jsonFile = new FileWriter(this.parsingResultLocation +"/"+pn+"/"+ fileName.substring(0, fileName.length() - 5) + "_A.json");
+//                                System.out.println(cek.getAbsolutePath());
+//                            }
                         }else{
-                            jsonFile = new FileWriter(this.parsingResultLocation+"/"+fileName.substring(0, fileName.length()-5)+".json");
+                            jsonFile = new FileWriter(this.parsingResultLocation+"/"+pn+"/"+fileName.substring(0, fileName.length() - 5) + ".json");
+//                            File cek = new File(this.parsingResultLocation+"/"+pn+"/"+fileName.substring(0, fileName.length()-5)+".json");
+//                            if(!cek.exists()) {
+//                                jsonFile = new FileWriter(this.parsingResultLocation+"/"+pn+"/"+fileName.substring(0, fileName.length() - 5) + ".json");
+//                                System.out.println(cek.getAbsolutePath());
+//                            }
+//                            else {
+//                                jsonFile = new FileWriter(this.parsingResultLocation +"/"+pn+"/"+ fileName.substring(0, fileName.length() - 5) + "_A.json");
+//                                System.out.println(cek.getAbsolutePath());
+//                            }
                         }
                         jsonFile.write(classArr.toString(4));
 //                        System.out.println("\nJSON Object saved to: " + classArr.get("Location"));
@@ -228,5 +247,10 @@ public class Controller implements Initializable {
         rd.close();
     }
 
+    public void chooseIndexing(ActionEvent actionEvent) throws IOException {
+        String path = indexingPath.getText();
+        String command = "cmd /c start cmd.exe /K \""+"java -jar -Dc=project -Dauto "+installLocation+"/post.jar "+path+"\\*\"";
+        Runtime.getRuntime().exec(command);
+    }
 
 }

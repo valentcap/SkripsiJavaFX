@@ -51,5 +51,7 @@
       </ButtonBar>
       <Text layoutX="288.0" layoutY="287.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Selected Folder" />
       <Button layoutX="636.0" layoutY="19.0" mnemonicParsing="false" onAction="#goToSettings" text="Settings" />
+      <TextField layoutX="288.0" layoutY="428.0" fx:id="indexingPath" />
+      <Button layoutX="288.0" layoutY="480.0" mnemonicParsing="false" onAction="#chooseIndexing" text="Index" />
         </children>
 </AnchorPane>

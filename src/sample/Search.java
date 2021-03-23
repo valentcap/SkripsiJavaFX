@@ -72,7 +72,7 @@ public class Search {
 
         final Map<String, String> queryParamMap = new HashMap<String, String>();
         //query
-        queryParamMap.put("q", "name:*"+inputKeyword+"*");
+        queryParamMap.put("q", "ClassName:*"+inputKeyword+"*");
         queryParamMap.put("fl", "id, name");
         queryParamMap.put("sort", "id asc");
         MapSolrParams queryParams = new MapSolrParams(queryParamMap);
@@ -90,10 +90,10 @@ public class Search {
     }
 
     public void addJSON() throws IOException {
-        String urlString = "http://localhost:8983/solr/gettingstarted/update";
+        String urlString = "http://localhost:8983/solr/project/update";
         URL url = new URL(urlString);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        String command = "curl 'http://localhost:8983/solr/gettingstarted/update?commit=true' --data-binary @example/exampledocs/books.json -H 'Content-type:application/json'";
+        String command = "curl 'http://localhost:8983/solr/project/update?commit=true' --data-binary @example/exampledocs/books.json -H 'Content-type:application/json'";
         ProcessBuilder pb = new ProcessBuilder(command.split(" "));
 
         pb.directory(new File("/home/"));

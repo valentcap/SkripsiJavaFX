@@ -57,16 +57,19 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
-            this.startSolr();
-//            this.getSolrCores();
+            this.getSolrCores();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
-    public void startSolr() throws IOException {
+    public void startSolr() throws IOException, InterruptedException, ParseException {
         //start solr
         Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd solr-8.6.0\\bin && solr start -p 8983\"");
+        Thread.sleep(10000);
+        this.getSolrCores();
     }
 
     public void getSettings(){

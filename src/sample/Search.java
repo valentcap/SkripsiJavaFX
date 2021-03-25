@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.apache.solr.client.solrj.SolrClient;
@@ -38,6 +39,8 @@ public class Search {
     private Button btnBack;
     @FXML
     private TextField keyword;
+    @FXML
+    private Label term;
 
         //constructor
     public Search() throws IOException, SolrServerException, ParseException {
@@ -69,11 +72,15 @@ public class Search {
     public void searching() throws IOException, SolrServerException {
         final SolrClient client = getSolrClient();
         String inputKeyword = keyword.getText();
+        if(term.getText().length()>0){
+            inputKeyword = term.getText();
+            term.setText("");
+        }
 
         final Map<String, String> queryParamMap = new HashMap<String, String>();
         //query
         queryParamMap.put("q", "ClassName:*"+inputKeyword+"*");
-        queryParamMap.put("fl", "ClassName, LineNum, ColNum");
+        queryParamMap.put("fl", "ClassName, LineNum, ColNum, Parent");
         queryParamMap.put("sort", "id asc");
         MapSolrParams queryParams = new MapSolrParams(queryParamMap);
 
@@ -82,12 +89,28 @@ public class Search {
         System.out.println("Found " + documents.getNumFound() + " documents");
 //        print("Found " + documents.getNumFound() + " documents");
         for(SolrDocument document : documents) {
-            final String className = (String) document.getFirstValue("ClassName");
-            final String colNum = Long.toString((Long) document.getFirstValue("ColNum"));
-            final String lineNum = Long.toString((Long) document.getFirstValue("LineNum"));
+            String className = (String) document.getFirstValue("ClassName");
+            String colNum = Long.toString((Long) document.getFirstValue("ColNum"));
+            String lineNum = Long.toString((Long) document.getFirstValue("LineNum"));
+            String parent = "";
+            if(document.get("Parent") != null) {
+                parent = document.get("Parent").toString();
+                parent = parent.substring(1, parent.length() - 1);
+            }
             System.out.println("ClassName: "+className);
             System.out.println("Column Number: "+colNum);
             System.out.println("Line Number: "+lineNum);
+            if(parent != "")
+                System.out.println("Parent Class: "+ parent);
+//
+            if(parent!=""){
+                term.setText(parent);
+                this.searching();
+            }
+
+            //safe
+//            System.out.println(document);
+
         }
     }
 

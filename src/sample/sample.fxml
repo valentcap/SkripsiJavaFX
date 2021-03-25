@@ -32,9 +32,8 @@
             <Button fx:id="btnSelectDir" layoutX="289.0" layoutY="331.0" mnemonicParsing="false" onAction="#chooseDirFunc" text="Pilih Folder" GridPane.columnIndex="1" GridPane.rowIndex="4" />
             <Label fx:id="path" layoutX="289.0" layoutY="300.0" prefHeight="18.0" prefWidth="34.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
       <TextField fx:id="projectName" layoutX="288.0" layoutY="236.0" promptText="Nama Project" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <Button fx:id="btnSearch" layoutX="717.0" layoutY="18.0" mnemonicParsing="false" onAction="#goToSearch" text="Searching" GridPane.columnIndex="5" />
       <Label fx:id="noCoreError" layoutX="362.0" layoutY="568.0" text="There are no SOLR core/collection(s), please create one in settings" textFill="RED" />
-      <ButtonBar layoutX="103.0" layoutY="11.0" prefHeight="40.0" prefWidth="200.0">
+      <ButtonBar layoutX="103.0" layoutY="11.0" prefHeight="40.0" prefWidth="685.0">
          <buttons>
             <MenuButton mnemonicParsing="false" text="MenuButton">
               <items>
@@ -47,11 +46,13 @@
 <!--                  </Menu>-->
               </items>
             </MenuButton>
+            <Button mnemonicParsing="false" onAction="#startSolr" text="Start SOLR" />
+            <Button mnemonicParsing="false" onAction="#goToSettings" text="Settings" />
+            <Button fx:id="btnSearch" mnemonicParsing="false" onAction="#goToSearch" text="Searching" />
          </buttons>
       </ButtonBar>
       <Text layoutX="288.0" layoutY="287.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Selected Folder" />
-      <Button layoutX="636.0" layoutY="19.0" mnemonicParsing="false" onAction="#goToSettings" text="Settings" />
-      <TextField layoutX="288.0" layoutY="428.0" fx:id="indexingPath" />
+      <TextField fx:id="indexingPath" layoutX="288.0" layoutY="428.0" />
       <Button layoutX="288.0" layoutY="480.0" mnemonicParsing="false" onAction="#chooseIndexing" text="Index" />
         </children>
 </AnchorPane>

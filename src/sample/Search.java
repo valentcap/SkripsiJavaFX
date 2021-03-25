@@ -73,7 +73,7 @@ public class Search {
         final Map<String, String> queryParamMap = new HashMap<String, String>();
         //query
         queryParamMap.put("q", "ClassName:*"+inputKeyword+"*");
-        queryParamMap.put("fl", "id, name");
+        queryParamMap.put("fl", "ClassName, LineNum, ColNum");
         queryParamMap.put("sort", "id asc");
         MapSolrParams queryParams = new MapSolrParams(queryParamMap);
 
@@ -82,10 +82,12 @@ public class Search {
         System.out.println("Found " + documents.getNumFound() + " documents");
 //        print("Found " + documents.getNumFound() + " documents");
         for(SolrDocument document : documents) {
-            final String id = (String) document.getFirstValue("id");
-            final String name = (String) document.getFirstValue("name");
-//            print("id: " + id + "; name: " + name);
-            System.out.println("id: " + id + "; name: " + name);
+            final String className = (String) document.getFirstValue("ClassName");
+            final String colNum = Long.toString((Long) document.getFirstValue("ColNum"));
+            final String lineNum = Long.toString((Long) document.getFirstValue("LineNum"));
+            System.out.println("ClassName: "+className);
+            System.out.println("Column Number: "+colNum);
+            System.out.println("Line Number: "+lineNum);
         }
     }
 

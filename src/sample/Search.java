@@ -27,12 +27,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 public class Search {
     private static final java.util.UUID UUID = null;
     FXMLLoader loader = new FXMLLoader(getClass().getResource("search.fxml"));
 //    final SolrClient client;
+    String core = "";
 
 
     @FXML
@@ -48,6 +50,7 @@ public class Search {
 //        this.addDocument();
 //        this.searching();
 //        this.getSolrCores();
+        this.getSettings();
     }
 
 
@@ -59,7 +62,7 @@ public class Search {
         doc.addField("id", UUID.randomUUID().toString());
         doc.addField("name", "tambahan");
 
-        final UpdateResponse updateResponse = client.add("project" ,doc);
+        final UpdateResponse updateResponse = client.add(this.core,doc);
 // Indexed documents must be committed
         client.commit("project");
     }
@@ -84,7 +87,7 @@ public class Search {
         queryParamMap.put("sort", "id asc");
         MapSolrParams queryParams = new MapSolrParams(queryParamMap);
 
-        final QueryResponse response = client.query("project", queryParams);
+        final QueryResponse response = client.query(this.core, queryParams);
         final SolrDocumentList documents = response.getResults();
         System.out.println("Found " + documents.getNumFound() + " documents");
 //        print("Found " + documents.getNumFound() + " documents");
@@ -114,24 +117,24 @@ public class Search {
         }
     }
 
-    public void addJSON() throws IOException {
-        String urlString = "http://localhost:8983/solr/project/update";
-        URL url = new URL(urlString);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        String command = "curl 'http://localhost:8983/solr/project/update?commit=true' --data-binary @example/exampledocs/books.json -H 'Content-type:application/json'";
-        ProcessBuilder pb = new ProcessBuilder(command.split(" "));
+    public void getSettings(){
+        try (InputStream input = new FileInputStream("./configs.properties")) {
+            String res;
 
-        pb.directory(new File("/home/"));
-        Process process = pb.start();
+            Properties prop = new Properties();
+            if (input != null) {
+                prop.load(input);
+            } else {
+                throw new FileNotFoundException("property file not found in the classpath");
+            }
 
-        con.setRequestMethod("POST");
-        con.setRequestProperty("Content-Type","application/json");
-
-
-        con.setDoOutput(true);
-
-
+            res = prop.getProperty("activeCore");
+            this.core = res;
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
     }
+
 
     public void startSolr() throws IOException, ParseException {
         Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"D: && cd solr-8.6.0\\bin && solr start -p 8983\"");
@@ -173,7 +176,7 @@ public class Search {
     }
 
     public void deleteDocuments() throws IOException, SolrServerException {
-        String urlString = "http://localhost:8983/solr/project";
+        String urlString = "http://localhost:8983/solr/"+this.core;
         SolrClient solrClient = new HttpSolrClient.Builder(urlString).build();
         //delete all documents
         solrClient.deleteByQuery("*");

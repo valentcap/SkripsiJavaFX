@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Text?>
@@ -19,5 +20,7 @@
       <Label layoutX="119.0" layoutY="263.0" text="SOLR Installation Location" />
       <Button fx:id="setSolrPath" layoutX="617.0" layoutY="259.0" mnemonicParsing="false" onAction="#setSolrPath" text="Set" />
       <Label fx:id="solrPath" layoutX="290.0" layoutY="263.0" prefHeight="18.0" prefWidth="308.0" />
+      <Label layoutX="119.0" layoutY="300.0" text="Select SOLR Core" />
+      <ChoiceBox fx:id="coreOptions" layoutX="461.0" layoutY="296.0" prefHeight="26.0" prefWidth="188.0" />
    </children>
 </AnchorPane>

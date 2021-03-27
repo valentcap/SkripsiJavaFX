@@ -30,9 +30,11 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         String x = ci.getNameAsString();
         String lineNum = String.valueOf(ci.getName().getBegin().get().line);
         String colNum = String.valueOf(ci.getName().getBegin().get().column);
+        String accessSpecifier = String.valueOf(ci.getAccessSpecifier());
         obj.put("ClassName", ci.getNameAsString());
         obj.put("LineNum", lineNum);
         obj.put("ColNum", colNum);
+        obj.put("Identifier", accessSpecifier);
 
 
         //methods

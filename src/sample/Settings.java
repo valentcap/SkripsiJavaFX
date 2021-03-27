@@ -7,16 +7,21 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 public class Settings implements Initializable {
     @FXML
@@ -33,16 +38,26 @@ public class Settings implements Initializable {
     private Button setParsingResultLocation;
     @FXML
     private Button setSolrPath;
+    @FXML
+    private ChoiceBox coreOptions;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         this.getSettings();
+        try {
+            this.getSolrCores();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setSettings(){
         try (OutputStream output = new FileOutputStream("./configs.properties")) {
 
             Properties prop = new Properties();
+
 
             // set the properties value
             Path iL = Paths.get(installLocation.getText());
@@ -53,6 +68,9 @@ public class Settings implements Initializable {
 
             Path solrL = Paths.get(solrPath.getText());
             prop.setProperty("solrPath", solrL.toString());
+
+            String aCore = coreOptions.getValue().toString();
+            prop.setProperty("activeCore", aCore);
 
             // save properties to project root folder
             prop.store(output, null);
@@ -78,6 +96,8 @@ public class Settings implements Initializable {
             installLocation.setText(res);
             res = prop.getProperty("parsingResultLocation");
             parsingResultLocation.setText(res);
+            res = prop.getProperty("solrPath");
+            solrPath.setText(res);
         } catch (IOException io) {
             io.printStackTrace();
         }
@@ -142,4 +162,48 @@ public class Settings implements Initializable {
         res = selectedDirectory.getAbsolutePath();
         this.solrPath.setText(res);
     }
+
+    public void getSolrCores() throws IOException, ParseException {
+        URL url = new URL("http://localhost:8983/solr/admin/cores?action=STATUS");
+        HttpURLConnection getCoreCon = (HttpURLConnection) url.openConnection();
+        getCoreCon.setRequestMethod("GET");
+        getCoreCon.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+        getCoreCon.setUseCaches(false);
+        getCoreCon.setDoOutput(true);
+        getCoreCon.setDoOutput(true);
+
+        DataOutputStream wr = new DataOutputStream(
+                getCoreCon.getOutputStream()
+        );
+//        wr.writeBytes(param);
+        wr.close();
+
+        InputStream is = getCoreCon.getInputStream();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while((line = rd.readLine()) != null) {
+            response.append(line);
+            response.append("\r");
+        }
+        JSONParser parser = new JSONParser();
+        org.json.simple.JSONObject json = (org.json.simple.JSONObject) parser.parse(response.toString());
+        json = (org.json.simple.JSONObject) json.get("status");
+        Set<String> x = json.keySet();
+//        for(int i=0; i<json.size(); i++){
+//            System.out.println("core/collection ke-"+i+"= "+x.toArray()[i]);
+//        }
+        if(json.size()==0){
+
+        }else{
+            System.out.println(json);
+            for(int i=0; i<json.size(); i++){
+                coreOptions.getItems().add(json.keySet().toArray()[i]);
+            }
+        }
+
+        rd.close();
+    }
+
 }

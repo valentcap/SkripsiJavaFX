@@ -83,7 +83,7 @@ public class Search {
         final Map<String, String> queryParamMap = new HashMap<String, String>();
         //query
         queryParamMap.put("q", "ClassName:*"+inputKeyword+"*");
-        queryParamMap.put("fl", "ClassName, LineNum, ColNum, Parent");
+        queryParamMap.put("fl", "ClassName, LineNum, ColNum, Parent, Implements");
         queryParamMap.put("sort", "id asc");
         MapSolrParams queryParams = new MapSolrParams(queryParamMap);
 
@@ -96,15 +96,30 @@ public class Search {
             String colNum = Long.toString((Long) document.getFirstValue("ColNum"));
             String lineNum = Long.toString((Long) document.getFirstValue("LineNum"));
             String parent = "";
+            String implemented = "";
+
+            //check parent
             if(document.get("Parent") != null) {
                 parent = document.get("Parent").toString();
                 parent = parent.substring(1, parent.length() - 1);
             }
-            System.out.println("ClassName: "+className);
-            System.out.println("Column Number: "+colNum);
-            System.out.println("Line Number: "+lineNum);
-            if(parent != "")
-                System.out.println("Parent Class: "+ parent);
+            //check implemented classes
+            if(document.get("Implements") != null){
+                implemented = document.get("Implements").toString();
+                implemented = implemented.substring(1, implemented.length()-1);
+                implemented = implemented.replace(" ", "");
+                String[] iArr;
+                iArr = implemented.split(",");
+                //loop for every implemented class
+                for(int x=0; x<iArr.length; x++){
+                    System.out.println(iArr[x]);
+                }
+            }
+//            System.out.println("ClassName: "+className);
+//            System.out.println("Column Number: "+colNum);
+//            System.out.println("Line Number: "+lineNum);
+//            if(parent != "")
+//                System.out.println("Parent Class: "+ parent);
 //
             if(parent!=""){
                 term.setText(parent);

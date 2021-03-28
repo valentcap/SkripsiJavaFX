@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.json.simple.parser.JSONParser;
@@ -40,6 +41,10 @@ public class Settings implements Initializable {
     private Button setSolrPath;
     @FXML
     private ChoiceBox coreOptions;
+    @FXML
+    private ChoiceBox deleteOptions;
+    @FXML
+    private TextField createName;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -191,19 +196,34 @@ public class Settings implements Initializable {
         org.json.simple.JSONObject json = (org.json.simple.JSONObject) parser.parse(response.toString());
         json = (org.json.simple.JSONObject) json.get("status");
         Set<String> x = json.keySet();
-//        for(int i=0; i<json.size(); i++){
-//            System.out.println("core/collection ke-"+i+"= "+x.toArray()[i]);
-//        }
         if(json.size()==0){
 
         }else{
-            System.out.println(json);
             for(int i=0; i<json.size(); i++){
                 coreOptions.getItems().add(json.keySet().toArray()[i]);
+                deleteOptions.getItems().add(json.keySet().toArray()[i]);
             }
         }
 
         rd.close();
+    }
+
+    public void createCore() throws IOException, ParseException, InterruptedException {
+//        solr create -c sbaru
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+ solrPath.getText().substring(0,2) +" && cd "+ solrPath.getText()+"\\bin && solr create -c "+createName.getText()+" && exit\"");
+        coreOptions.getItems().clear();
+        deleteOptions.getItems().clear();
+        Thread.sleep(4000);
+        this.getSolrCores();
+    }
+
+    public void deleteCore() throws IOException, ParseException, InterruptedException {
+        String deleted = deleteOptions.getValue().toString();
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+ solrPath.getText().substring(0,2) +" && cd "+ solrPath.getText()+"\\bin && solr delete -c "+deleted+" && exit\"");
+        coreOptions.getItems().clear();
+        deleteOptions.getItems().clear();
+        Thread.sleep(4000);
+        this.getSolrCores();
     }
 
 }

@@ -89,7 +89,7 @@ public class Search {
 
         final QueryResponse response = client.query(this.core, queryParams);
         final SolrDocumentList documents = response.getResults();
-        System.out.println("Found " + documents.getNumFound() + " documents");
+//        System.out.println("Found " + documents.getNumFound() + " documents");
 //        print("Found " + documents.getNumFound() + " documents");
         for(SolrDocument document : documents) {
             String className = (String) document.getFirstValue("ClassName");

@@ -50,6 +50,7 @@ public class Controller implements Initializable {
 
     private String installLocation;
     private String parsingResultLocation;
+    private String solrpath;
 
     public Controller() throws IOException, ParseException {
         this.getSettings();
@@ -67,7 +68,7 @@ public class Controller implements Initializable {
 
     public void startSolr() throws IOException, InterruptedException, ParseException {
         //start solr
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \"cd solr-8.6.0\\bin && solr start -p 8983\"");
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+solrpath.substring(0,2) +" && cd "+solrpath+"\\bin && solr start -p 8983\"");
         Thread.sleep(10000);
         this.getSolrCores();
     }
@@ -87,6 +88,8 @@ public class Controller implements Initializable {
             this.installLocation = res;
             res = prop.getProperty("parsingResultLocation");
             this.parsingResultLocation = res;
+            res = prop.getProperty("solrPath");
+            this.solrpath = res;
         } catch (IOException io) {
             io.printStackTrace();
         }
@@ -236,9 +239,6 @@ public class Controller implements Initializable {
         org.json.simple.JSONObject json = (org.json.simple.JSONObject) parser.parse(response.toString());
         json = (org.json.simple.JSONObject) json.get("status");
         Set<String> x = json.keySet();
-//        for(int i=0; i<json.size(); i++){
-//            System.out.println("core/collection ke-"+i+"= "+x.toArray()[i]);
-//        }
         if(json.size()==0){
             noCoreError.setText("There are no SOLR core/collection(s), please create one in settings");
         }else{

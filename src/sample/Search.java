@@ -12,12 +12,18 @@ import javafx.stage.Stage;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.io.Tuple;
+import org.apache.solr.client.solrj.io.stream.SolrStream;
+import org.apache.solr.client.solrj.io.stream.StreamContext;
+import org.apache.solr.client.solrj.io.stream.TupleStream;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.MapSolrParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -51,6 +57,8 @@ public class Search {
 //        this.searching();
 //        this.getSolrCores();
         this.getSettings();
+//        this.addDocument();
+//        this.solrStream();
     }
 
 
@@ -59,8 +67,15 @@ public class Search {
         final SolrClient client = getSolrClient();
 
         final SolrInputDocument doc = new SolrInputDocument();
-        doc.addField("id", UUID.randomUUID().toString());
-        doc.addField("name", "tambahan");
+        doc.addField("id", "D");
+        doc.addField("foo", 20);
+        doc.addField("out_edge", "4");
+        doc.addField("out_edge", "7");
+
+        doc.addField("in_edge", "3");
+        doc.addField("in_edge", "5");
+
+
 
         final UpdateResponse updateResponse = client.add(this.core,doc);
 // Indexed documents must be committed
@@ -85,12 +100,12 @@ public class Search {
         queryParamMap.put("q", "ClassName:*"+inputKeyword+"*");
         queryParamMap.put("fl", "ClassName, LineNum, ColNum, Parent, Implements");
         queryParamMap.put("sort", "id asc");
+        queryParamMap.put("rows", "999");
         MapSolrParams queryParams = new MapSolrParams(queryParamMap);
 
         final QueryResponse response = client.query(this.core, queryParams);
         final SolrDocumentList documents = response.getResults();
-//        System.out.println("Found " + documents.getNumFound() + " documents");
-//        print("Found " + documents.getNumFound() + " documents");
+        System.out.println("Found " + documents.getNumFound() + " documents");
         for(SolrDocument document : documents) {
             String className = (String) document.getFirstValue("ClassName");
             String colNum = Long.toString((Long) document.getFirstValue("ColNum"));
@@ -114,6 +129,8 @@ public class Search {
                 for(int x=0; x<iArr.length; x++){
                     System.out.println(iArr[x]);
                 }
+                this.implementsSearching(iArr);
+
             }
 //            System.out.println("ClassName: "+className);
 //            System.out.println("Column Number: "+colNum);
@@ -123,12 +140,23 @@ public class Search {
 //
             if(parent!=""){
                 term.setText(parent);
-                this.searching();
+//                this.searching();
+                this.parentSearching(parent);
             }
 
             //safe
 //            System.out.println(document);
 
+        }
+    }
+
+    public void parentSearching(String parent){
+        System.out.println("Cari dari parent: "+parent);
+    }
+
+    public void implementsSearching(String[] implemented){
+        for(int i=0; i<implemented.length; i++){
+            System.out.println("Pencarian dari implement: "+implemented[i]);
         }
     }
 
@@ -196,6 +224,26 @@ public class Search {
         //delete all documents
         solrClient.deleteByQuery("*");
         solrClient.commit();
+    }
+
+
+    public void solrStream() throws IOException, SolrException {
+        String cexpr = "search("+this.core+", q=\"from:*player*\",fl=\"ClassName, Parent\", sort=\"ClassName asc\", qt=\"/export\")";
+        ModifiableSolrParams paramsLoc = new ModifiableSolrParams();
+        paramsLoc.set("expr", cexpr);
+        paramsLoc.set("qt", "/stream");
+
+        String url = "http://localhost:8983/solr/" + this.core;
+
+        TupleStream solrStream = new SolrStream(url, paramsLoc);
+        StreamContext context = new StreamContext();
+        solrStream.setStreamContext(context);
+        solrStream.open();
+        //read tuples
+        System.out.println(solrStream);
+        Tuple x = solrStream.read();
+        System.out.println(x);
+        solrStream.close();
     }
 
 

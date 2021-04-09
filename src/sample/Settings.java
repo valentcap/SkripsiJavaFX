@@ -45,6 +45,8 @@ public class Settings implements Initializable {
     private ChoiceBox deleteOptions;
     @FXML
     private TextField createName;
+    @FXML
+    private Label activeCore;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -76,6 +78,7 @@ public class Settings implements Initializable {
 
             String aCore = coreOptions.getValue().toString();
             prop.setProperty("activeCore", aCore);
+            activeCore.setText(aCore);
 
             // save properties to project root folder
             prop.store(output, null);
@@ -103,6 +106,8 @@ public class Settings implements Initializable {
             parsingResultLocation.setText(res);
             res = prop.getProperty("solrPath");
             solrPath.setText(res);
+            res = prop.getProperty("activeCore");
+            activeCore.setText(res);
         } catch (IOException io) {
             io.printStackTrace();
         }

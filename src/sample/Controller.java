@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.neo4j.driver.*;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -45,12 +46,15 @@ public class Controller implements Initializable {
     private Button btnSearch;
     @FXML
     private Label noCoreError;
-    @FXML
-    private TextField indexingPath;
 
     private String installLocation;
     private String parsingResultLocation;
     private String solrpath;
+    private String activeCore;
+    private String neo4jPath;
+
+    private Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "nepal-cartoon-flex-sport-tape-8099" ));
+    Session session = driver.session();
 
     public Controller() throws IOException, ParseException {
         this.getSettings();
@@ -68,7 +72,7 @@ public class Controller implements Initializable {
 
     public void startSolr() throws IOException, InterruptedException, ParseException {
         //start solr
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+solrpath.substring(0,2) +" && cd "+solrpath+"\\bin && solr start -p 8983\"");
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+solrpath.substring(0,2) +" && cd "+solrpath+" && solr start -p 8983\"");
         Thread.sleep(10000);
         this.getSolrCores();
     }
@@ -90,6 +94,10 @@ public class Controller implements Initializable {
             this.parsingResultLocation = res;
             res = prop.getProperty("solrPath");
             this.solrpath = res;
+            res = prop.getProperty("activeCore");
+            this.activeCore = res;
+            res = prop.getProperty("neo4jPath");
+            this.neo4jPath = res;
         } catch (IOException io) {
             io.printStackTrace();
         }
@@ -98,6 +106,7 @@ public class Controller implements Initializable {
     public void showFiles(File[] files) throws IOException {
         FileWriter jsonFile;
         int i=0;
+
         for (File file : files) {
             if (file.isDirectory()) {
                 showFiles(file.listFiles()); // Calls same method again.
@@ -121,7 +130,7 @@ public class Controller implements Initializable {
 //                        GenericListVisitorAdapter<String, Void> classNameReturn = new ClassNamePrinterReturn();
 //                        List<String> listClass = classNameReturn.visit(compilationUnit, null);
 
-                        GenericListVisitorAdapter<JSONObject, Void> fileParser = new FileParser(codePath);
+                        GenericListVisitorAdapter<JSONObject, Void> fileParser = new FileParser(codePath, this.session);
                         List<JSONObject> objList = fileParser.visit(compilationUnit, null);
 
                         JSONArray classArr = new JSONArray();
@@ -170,7 +179,6 @@ public class Controller implements Initializable {
             }
             i++;
         }
-
     }
 
     public void chooseDirFunc(ActionEvent actionEvent) throws IOException {
@@ -178,9 +186,12 @@ public class Controller implements Initializable {
         directoryChooser.setInitialDirectory(new File("../Java_Code"));
 
         File selectedDirectory = directoryChooser.showDialog(btnSelectDir.getScene().getWindow());
+
         if(selectedDirectory != null) {
             path.setText(selectedDirectory.getAbsolutePath());
             showFiles(selectedDirectory.listFiles());
+            this.session.close();
+            this.driver.close();
         }
         else {
             System.out.println("tidak memilih directory");
@@ -251,9 +262,38 @@ public class Controller implements Initializable {
     }
 
     public void chooseIndexing(ActionEvent actionEvent) throws IOException {
-        String path = indexingPath.getText();
-        String command = "cmd /c start cmd.exe /K \""+"java -jar -Dc=project -Dauto "+installLocation+"/post.jar "+path+"\\*\"";
-        Runtime.getRuntime().exec(command);
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setInitialDirectory(new File(installLocation));
+
+        File selectedDirectory = directoryChooser.showDialog(btnSelectDir.getScene().getWindow());
+        if(selectedDirectory != null) {
+            String command = "cmd /c start cmd.exe /K \""+"java -jar -Dc="+this.activeCore+" -Dauto "+installLocation+"/post.jar "+selectedDirectory.getAbsolutePath()+"\\*\"";
+            System.out.println(command);
+            Runtime.getRuntime().exec(command);
+        }
+        else {
+            System.out.println("tidak memilih directory");
+        }
     }
 
+    public void startNeo4jService() throws IOException, InterruptedException {
+        //start neo4j
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+neo4jPath.substring(0,2) +" && cd "+neo4jPath+" && neo4j console\"");
+//        Thread.sleep(10000);
+        driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "nepal-cartoon-flex-sport-tape-8099" ));
+
+
+//        Session session = driver.session();
+//
+//        session.run("CREATE (baeldung:Company {name:\"Baeldung\"}) " +
+//                "-[:owns]-> (tesla:Car {make: 'tesla', model: 'modelX'})" +
+//                "RETURN baeldung, tesla");
+//
+//        Result res = session.run("MATCH (company:Company)-[:owns]-> (car:Car)" +
+//                "WHERE car.make='tesla' and car.model='modelX'" +
+//                "RETURN company.name");
+//
+//        session.close();
+//        driver.close();
+    }
 }

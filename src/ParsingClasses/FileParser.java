@@ -8,29 +8,41 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.GenericListVisitorAdapter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.neo4j.driver.*;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
     //    List<String> res = new ArrayList<String>();
     List<JSONObject> res = new ArrayList<>();
     Path codePath;
+//    private Driver driver;
+    Session session;
 
-    public FileParser(Path codePath){
+    public FileParser(Path codePath, Session s){
+        this.session = s;
         this.codePath = codePath;
     }
 
     @Override
     public List<JSONObject> visit(final ClassOrInterfaceDeclaration ci,final Void arg) {
         super.visit(ci, arg);
+        //NEO4J setup driver
+//        driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "nepal-cartoon-flex-sport-tape-8099" ));
+//        Session session = driver.session();
+
+
         JSONObject obj = new JSONObject();
         //class declarations
         String x = ci.getNameAsString();
         String lineNum = String.valueOf(ci.getName().getBegin().get().line);
         String colNum = String.valueOf(ci.getName().getBegin().get().column);
         String accessSpecifier = String.valueOf(ci.getAccessSpecifier());
+        //coba
+        obj.put("ID", UUID.randomUUID());
         obj.put("ClassName", ci.getNameAsString());
         obj.put("LineNum", lineNum);
         obj.put("ColNum", colNum);
@@ -111,6 +123,28 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
 //        res.add(lineNum);
 //        res.add(colNum);
         res.add(obj);
+
+        //putting to graph DB
+        String neo4jCommand = "MERGE (n:Class {name:\""+ci.getNameAsString()+"\"}) ";
+        //cek jika memiliki parent
+        if(!parent.equals("")){
+            neo4jCommand += "MERGE (parent:Class {name:\""+parent+"\"}) ";
+            neo4jCommand += "MERGE (n)-[:extends]->(parent) ";
+            neo4jCommand += "RETURN n, parent";
+        }else{
+            neo4jCommand += "RETURN n";
+        }
+
+        session.run(neo4jCommand);
+//                "RETURN "+ci.getNameAsString());
+//        Result graph = session.run("MATCH (company:Company)-[:owns]-> (car:Car)" +
+//                "WHERE car.make='tesla' and car.model='modelX'" +
+//                "RETURN company.name");
+
+//        session.close();
+//        driver.close();
+
+
         return  res;
     }
 }

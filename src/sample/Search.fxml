@@ -17,10 +17,9 @@
 <!--  </rowConstraints>-->
    <children>
       <Button fx:id="btnBack" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#backToHome" text="Back" />
-      <Button fx:id="btnStartSolr" layoutX="81.0" layoutY="14.0" mnemonicParsing="false" onAction="#startSolr" text="Start SOLR" />
       <Button layoutX="374.0" layoutY="275.0" mnemonicParsing="false" onAction="#searching" text="Search" />
       <TextField fx:id="keyword" layoutX="326.0" layoutY="233.0" promptText="keyword" />
-      <Button layoutX="182.0" layoutY="14.0" mnemonicParsing="false" onAction="#deleteDocuments" text="Delete Docs" />
+      <Button layoutX="706.0" layoutY="14.0" mnemonicParsing="false" onAction="#deleteDocuments" text="Delete Index" />
       <Label fx:id="term" layoutX="672.0" layoutY="560.0" textFill="WHITE" />
    </children>
 </AnchorPane>

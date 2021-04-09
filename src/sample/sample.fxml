@@ -3,8 +3,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.MenuButton?>
-<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.GridPane?>
@@ -35,24 +33,13 @@
       <Label fx:id="noCoreError" layoutX="362.0" layoutY="568.0" text="There are no SOLR core/collection(s), please create one in settings" textFill="RED" />
       <ButtonBar layoutX="103.0" layoutY="11.0" prefHeight="40.0" prefWidth="685.0">
          <buttons>
-            <MenuButton mnemonicParsing="false" text="MenuButton">
-              <items>
-                <MenuItem mnemonicParsing="false" onAction="#goToSearch" text="Searching" />
-                <MenuItem mnemonicParsing="false" text="Action 2" />
-<!--                  <Menu mnemonicParsing="false" text="Unspecified Menu">-->
-<!--                    <items>-->
-<!--                      <MenuItem mnemonicParsing="false" text="Action 1" />-->
-<!--                    </items>-->
-<!--                  </Menu>-->
-              </items>
-            </MenuButton>
-            <Button mnemonicParsing="false" onAction="#startSolr" text="Start SOLR" />
             <Button mnemonicParsing="false" onAction="#goToSettings" text="Settings" />
             <Button fx:id="btnSearch" mnemonicParsing="false" onAction="#goToSearch" text="Searching" />
          </buttons>
       </ButtonBar>
       <Text layoutX="288.0" layoutY="287.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Selected Folder" />
-      <TextField fx:id="indexingPath" layoutX="288.0" layoutY="428.0" />
       <Button layoutX="288.0" layoutY="480.0" mnemonicParsing="false" onAction="#chooseIndexing" text="Index" />
+      <Button layoutX="490.0" layoutY="480.0" mnemonicParsing="false" onAction="#startSolr" text="Start SOLR" />
+      <Button layoutX="599.0" layoutY="480.0" mnemonicParsing="false" onAction="#startNeo4jService" text="Start Neo4j" />
         </children>
 </AnchorPane>

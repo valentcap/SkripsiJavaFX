@@ -21,7 +21,7 @@
       <Button fx:id="setSolrPath" layoutX="617.0" layoutY="211.0" mnemonicParsing="false" onAction="#setSolrPath" text="Set" />
       <Label fx:id="solrPath" layoutX="290.0" layoutY="214.0" prefHeight="18.0" prefWidth="308.0" />
       <Label layoutX="119.0" layoutY="255.0" text="Select SOLR Core" />
-      <ChoiceBox fx:id="coreOptions" layoutX="462.0" layoutY="250.0" prefHeight="26.0" prefWidth="188.0" />
+      <ChoiceBox fx:id="coreOptions" layoutX="512.0" layoutY="250.0" prefHeight="26.0" prefWidth="138.0" />
       <Label layoutX="119.0" layoutY="410.0" text="Create SOLR Core" />
       <Label layoutX="119.0" layoutY="135.0" text="Install Location" />
       <TextField fx:id="createName" layoutX="290.0" layoutY="406.0" promptText="Core Name" />
@@ -29,5 +29,6 @@
       <Label layoutX="119.0" layoutY="450.0" text="Delete SOLR Core" />
       <ChoiceBox fx:id="deleteOptions" layoutX="289.0" layoutY="446.0" prefWidth="150.0" />
       <Button layoutX="591.0" layoutY="446.0" mnemonicParsing="false" onAction="#deleteCore" text="Delete" />
+      <Label fx:id="activeCore" layoutX="290.0" layoutY="254.0" prefHeight="18.0" prefWidth="138.0" />
    </children>
 </AnchorPane>

@@ -190,8 +190,8 @@ public class Controller implements Initializable {
         if(selectedDirectory != null) {
             path.setText(selectedDirectory.getAbsolutePath());
             showFiles(selectedDirectory.listFiles());
-            this.session.close();
-            this.driver.close();
+//            this.session.close();
+//            this.driver.close();
         }
         else {
             System.out.println("tidak memilih directory");

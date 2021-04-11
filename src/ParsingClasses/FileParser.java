@@ -87,7 +87,6 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
 //        System.out.println("Implemented punya "+ci.getNameAsString()+": "+ci.getImplementedTypes().size());
         NodeList<ClassOrInterfaceType> implementedTypes = ci.getImplementedTypes();
         for(int i=0; i<implementedTypes.size(); i++){
-//            System.out.println(implementedTypes.get(i).getNameAsString());
             implementedArr.put(implementedTypes.get(i).getNameAsString());
         }
         obj.put("Implements", implementedArr);
@@ -95,17 +94,14 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         //constructors
         JSONArray arrConstructor = new JSONArray();
 
-//        System.out.println("Method punya "+ci.getNameAsString()+": "+ci.getMethods().size());
         List<ConstructorDeclaration> constructors = ci.getConstructors();
         for(int i=0; i<ci.getConstructors().size(); i++){
             JSONObject objConstructor = new JSONObject();
             JSONArray params = new JSONArray();
-//            System.out.println(constructors.get(i).getNameAsString());
             constructors.get(i).getParameters();
             int paramSize = constructors.get(i).getParameters().size();
 
             for(int j=0; j<paramSize; j++){
-//                System.out.println(methods.get(i).getParameters().get(j));
                 params.put(constructors.get(i).getParameters().get(j));
             }
 //            JSONArray sub = new JSONArray();
@@ -119,21 +115,60 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         //location
         obj.put("Location", this.codePath.toString());
 
-//        res.add(x);
-//        res.add(lineNum);
-//        res.add(colNum);
         res.add(obj);
 
-        //putting to graph DB
-        String neo4jCommand = "MERGE (n:Class {name:\""+ci.getNameAsString()+"\"}) ";
+        //putting to graph DB (neo4j)
+        String interfaceOrClass = "";
+        if(ci.isInterface()){
+            interfaceOrClass = "Interface";
+        }else{
+            interfaceOrClass = "Class";
+        }
+        int hasextended = 0;
+        int hasImplemented = 0;
+        int implementedNum = implementedTypes.size();
+        String neo4jCommand = "MERGE (n:"+interfaceOrClass+" {name:\""+ci.getNameAsString()+"\"}) ";
         //cek jika memiliki parent
         if(!parent.equals("")){
-            neo4jCommand += "MERGE (parent:Class {name:\""+parent+"\"}) ";
+            neo4jCommand += "MERGE (parent:"+interfaceOrClass+" {name:\""+parent+"\"}) ";
             neo4jCommand += "MERGE (n)-[:extends]->(parent) ";
+            //change flag
+            hasextended = 1;
+//            neo4jCommand += "RETURN n, parent";
+        }
+//        else{
+//            neo4jCommand += "RETURN n";
+//        }
+        //cek jika implements sesuatu
+        if(implementedNum > 0){
+            //change flag
+            hasImplemented = 1;
+            for(int i=0; i<implementedNum; i++){
+//                implementedArr.put(implementedTypes.get(i).getNameAsString());
+                neo4jCommand += "MERGE (implemented"+i+":Interface {name:\""+implementedTypes.get(i).getNameAsString()+"\"}) ";
+                neo4jCommand += "MERGE (n)-[:implements]->(implemented"+i+") ";
+                session.run(neo4jCommand);
+            }
+        }
+
+
+//        if(hasextended == 1 && hasImplemented == 1){
+//            neo4jCommand += "RETURN n, parent, implemented";
+//        }
+        if(hasextended == 1){
             neo4jCommand += "RETURN n, parent";
+            for(int j=0; j<implementedNum; j++){
+                neo4jCommand +=", implemented"+j;
+            }
+        }else if(hasImplemented == 1){
+            neo4jCommand += "RETURN n";
+            for(int j=0; j<implementedNum; j++){
+                neo4jCommand +=", implemented"+j;
+            }
         }else{
             neo4jCommand += "RETURN n";
         }
+
 
         session.run(neo4jCommand);
 //                "RETURN "+ci.getNameAsString());

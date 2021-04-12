@@ -261,15 +261,51 @@ public class Controller implements Initializable {
         rd.close();
     }
 
-    public void chooseIndexing(ActionEvent actionEvent) throws IOException {
+    public void chooseIndexing(ActionEvent actionEvent) throws IOException, ParseException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(new File(installLocation));
 
         File selectedDirectory = directoryChooser.showDialog(btnSelectDir.getScene().getWindow());
         if(selectedDirectory != null) {
             String command = "cmd /c start cmd.exe /K \""+"java -jar -Dc="+this.activeCore+" -Dauto "+installLocation+"/post.jar "+selectedDirectory.getAbsolutePath()+"\\*\"";
-            System.out.println(command);
             Runtime.getRuntime().exec(command);
+            File[] files = selectedDirectory.listFiles();
+            String neo4jQuery = "";
+            for (File file : files) {
+                JSONParser jparser = new JSONParser();
+                Object x = jparser.parse(new FileReader(file.getAbsolutePath()));
+                org.json.simple.JSONArray res = (org.json.simple.JSONArray) x;
+
+
+
+
+
+                for(int i=0; i<res.size(); i++){
+                    org.json.simple.JSONObject temp = (org.json.simple.JSONObject) res.get(i);
+                    //putting to graph DB (neo4j)
+//                    String interfaceOrClass = (temp.get("InterfaceOrClass").toString() == null) ? "" : temp.get("InterfaceOrClass").toString();
+                    String className = (temp.get("ClassName") == null) ? "" : temp.get("ClassName").toString();
+                    String  identifier = (temp.get("Identifier") == null) ? "" : temp.get("Identifier").toString();
+                    String location = (temp.get("Location") == null) ? "" : temp.get("Location").toString().replace("\\", "\\\\");
+                    String colNum = (temp.get("ColNum") == null) ? "" : temp.get("ColNum").toString();
+                    String lineNum = (temp.get("LineNum") == null) ? "" : temp.get("LineNum").toString();
+                    //temp.get("LineNum")
+                    String neo4jCommand = "";
+
+
+                    neo4jQuery = "MERGE (n {name: '"+className+"'}) "+
+                    "SET n = {" +
+                            "name: '"+className+"', " +
+                            "identifier: '"+identifier+"', "+
+                            "location: '"+location+"', " +
+                            "colNum: '"+colNum+"', "+
+                            "lineNum: '"+lineNum+"'"+
+                            "} "+
+                    "RETURN n";
+                    session.run(neo4jQuery);
+                }
+
+            }
         }
         else {
             System.out.println("tidak memilih directory");

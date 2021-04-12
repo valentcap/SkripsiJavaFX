@@ -114,6 +114,8 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
 
         //location
         obj.put("Location", this.codePath.toString());
+        //interface or class
+        obj.put("InterfaceOrClass", ci.isInterface() ? "Interface" : "Class");
 
         res.add(obj);
 
@@ -134,7 +136,6 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
             neo4jCommand += "MERGE (n)-[:extends]->(parent) ";
             //change flag
             hasextended = 1;
-//            neo4jCommand += "RETURN n, parent";
         }
 //        else{
 //            neo4jCommand += "RETURN n";
@@ -147,7 +148,6 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
 //                implementedArr.put(implementedTypes.get(i).getNameAsString());
                 neo4jCommand += "MERGE (implemented"+i+":Interface {name:\""+implementedTypes.get(i).getNameAsString()+"\"}) ";
                 neo4jCommand += "MERGE (n)-[:implements]->(implemented"+i+") ";
-                session.run(neo4jCommand);
             }
         }
 

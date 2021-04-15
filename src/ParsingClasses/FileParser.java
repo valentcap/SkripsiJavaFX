@@ -3,8 +3,10 @@ package ParsingClasses;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericListVisitorAdapter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,7 +48,18 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         obj.put("ClassName", ci.getNameAsString());
         obj.put("LineNum", lineNum);
         obj.put("ColNum", colNum);
-        obj.put("Identifier", accessSpecifier);
+        obj.put("AccessSpecifier", accessSpecifier);
+        List<FieldDeclaration> fi = ci.getFields();
+        JSONArray fields = new JSONArray();
+        List<Type> fieldsList = new ArrayList<>();
+        for(int q=0; q<fi.size(); q++){
+            if(fi.get(q).getCommonType().isReferenceType()){
+                Type fN = fi.get(q).getCommonType();
+                fields.put(fN.asString());
+                fieldsList.add(fN);
+            }
+        }
+        obj.put("Fields", fields);
 
 
         //methods
@@ -152,22 +165,19 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         }
 
 
-//        if(hasextended == 1 && hasImplemented == 1){
-//            neo4jCommand += "RETURN n, parent, implemented";
+//        if(hasextended == 1){
+//            neo4jCommand += "RETURN n, parent";
+//            for(int j=0; j<implementedNum; j++){
+//                neo4jCommand +=", implemented"+j;
+//            }
+//        }else if(hasImplemented == 1){
+//            neo4jCommand += "RETURN n";
+//            for(int j=0; j<implementedNum; j++){
+//                neo4jCommand +=", implemented"+j;
+//            }
+//        }else{
+//            neo4jCommand += "RETURN n";
 //        }
-        if(hasextended == 1){
-            neo4jCommand += "RETURN n, parent";
-            for(int j=0; j<implementedNum; j++){
-                neo4jCommand +=", implemented"+j;
-            }
-        }else if(hasImplemented == 1){
-            neo4jCommand += "RETURN n";
-            for(int j=0; j<implementedNum; j++){
-                neo4jCommand +=", implemented"+j;
-            }
-        }else{
-            neo4jCommand += "RETURN n";
-        }
 
 
         session.run(neo4jCommand);

@@ -84,10 +84,6 @@ public class Search {
     public void searching() throws IOException, SolrServerException {
         final SolrClient client = getSolrClient();
         String inputKeyword = keyword.getText();
-        if(term.getText().length()>0){
-            inputKeyword = term.getText();
-            term.setText("");
-        }
         String firstResult = "";
 
         //SEARCHING SOLR

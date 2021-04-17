@@ -32,10 +32,6 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
     @Override
     public List<JSONObject> visit(final ClassOrInterfaceDeclaration ci,final Void arg) {
         super.visit(ci, arg);
-        //NEO4J setup driver
-//        driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "nepal-cartoon-flex-sport-tape-8099" ));
-//        Session session = driver.session();
-
 
         JSONObject obj = new JSONObject();
         //class declarations
@@ -164,19 +160,11 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
             }
         }
 
-
-//        if(hasextended == 1){
-//            neo4jCommand += "RETURN n, parent";
-//            for(int j=0; j<implementedNum; j++){
-//                neo4jCommand +=", implemented"+j;
-//            }
-//        }else if(hasImplemented == 1){
-//            neo4jCommand += "RETURN n";
-//            for(int j=0; j<implementedNum; j++){
-//                neo4jCommand +=", implemented"+j;
-//            }
-//        }else{
-//            neo4jCommand += "RETURN n";
+        //FAILED
+//        for(int q=0; q<fieldsList.size(); q++) {
+//            String fieldName = fieldsList.get(q).asString();
+//            neo4jCommand += "MERGE (associated"+q+":Unknown {name:\""+fieldName+"\"}) ";
+//            neo4jCommand += "MERGE (n)-[:has]->(associated"+q+") ";
 //        }
 
 

@@ -270,7 +270,7 @@ public class Controller implements Initializable {
                     //putting to graph DB (neo4j)
 //                    String interfaceOrClass = (temp.get("InterfaceOrClass").toString() == null) ? "" : temp.get("InterfaceOrClass").toString();
                     String className = (temp.get("ClassName") == null) ? "" : temp.get("ClassName").toString();
-                    String  identifier = (temp.get("Identifier") == null) ? "" : temp.get("Identifier").toString();
+                    String  accessSpecifier = (temp.get("AccessSpecifier") == null) ? "" : temp.get("AccessSpecifier").toString();
                     String location = (temp.get("Location") == null) ? "" : temp.get("Location").toString().replace("\\", "\\\\");
                     String colNum = (temp.get("ColNum") == null) ? "" : temp.get("ColNum").toString();
                     String lineNum = (temp.get("LineNum") == null) ? "" : temp.get("LineNum").toString();
@@ -284,7 +284,7 @@ public class Controller implements Initializable {
                     neo4jQuery = "MERGE (n {name: '"+className+"'}) "+
                     "SET n = {" +
                             "name: '"+className+"', " +
-                            "identifier: '"+identifier+"', "+
+                            "identifier: '"+accessSpecifier+"', "+
                             "location: '"+location+"', " +
                             "colNum: '"+colNum+"', "+
                             "lineNum: '"+lineNum+"'"+

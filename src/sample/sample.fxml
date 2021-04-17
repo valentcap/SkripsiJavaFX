@@ -30,7 +30,6 @@
             <Button fx:id="btnSelectDir" layoutX="289.0" layoutY="331.0" mnemonicParsing="false" onAction="#chooseDirFunc" text="Pilih Folder" GridPane.columnIndex="1" GridPane.rowIndex="4" />
             <Label fx:id="path" layoutX="289.0" layoutY="300.0" prefHeight="18.0" prefWidth="34.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
       <TextField fx:id="projectName" layoutX="288.0" layoutY="236.0" promptText="Nama Project" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-      <Label fx:id="noCoreError" layoutX="362.0" layoutY="568.0" text="There are no SOLR core/collection(s), please create one in settings" textFill="RED" />
       <ButtonBar layoutX="103.0" layoutY="11.0" prefHeight="40.0" prefWidth="685.0">
          <buttons>
             <Button mnemonicParsing="false" onAction="#goToSettings" text="Settings" />

@@ -13,14 +13,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.neo4j.driver.*;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Session;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -44,8 +46,6 @@ public class Controller implements Initializable {
     private TextField projectName;
     @FXML
     private Button btnSearch;
-    @FXML
-    private Label noCoreError;
 
     private String installLocation;
     private String parsingResultLocation;
@@ -73,8 +73,6 @@ public class Controller implements Initializable {
     public void startSolr() throws IOException, InterruptedException, ParseException {
         //start solr
         Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+solrpath.substring(0,2) +" && cd "+solrpath+" && solr start -p 8983\"");
-        Thread.sleep(10000);
-        this.getSolrCores();
     }
 
     public void getSettings(){
@@ -119,16 +117,10 @@ public class Controller implements Initializable {
 
                     try{
                         compilationUnit = StaticJavaParser.parse(Files.readString(codePath));
-
+//                        System.out.println("CUUU\n"+compilationUnit.);
 //                        cacat parsing -> jika ada switch case
 //                                tidak dapat parsing dengan benar dengan javaparser
 
-
-
-
-                        //parse nama class
-//                        GenericListVisitorAdapter<String, Void> classNameReturn = new ClassNamePrinterReturn();
-//                        List<String> listClass = classNameReturn.visit(compilationUnit, null);
 
                         GenericListVisitorAdapter<JSONObject, Void> fileParser = new FileParser(codePath, this.session);
                         List<JSONObject> objList = fileParser.visit(compilationUnit, null);
@@ -250,20 +242,13 @@ public class Controller implements Initializable {
         org.json.simple.JSONObject json = (org.json.simple.JSONObject) parser.parse(response.toString());
         json = (org.json.simple.JSONObject) json.get("status");
         Set<String> x = json.keySet();
-        if(json.size()==0){
-            noCoreError.setText("There are no SOLR core/collection(s), please create one in settings");
-        }else{
-            String c = "You have "+json.size()+" SOLR core(s) available";
-            noCoreError.setTextFill(Color.color(0,0,0));
-            noCoreError.setText(c);
-        }
 
         rd.close();
     }
 
     public void chooseIndexing(ActionEvent actionEvent) throws IOException, ParseException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setInitialDirectory(new File(installLocation));
+        directoryChooser.setInitialDirectory(new File(parsingResultLocation));
 
         File selectedDirectory = directoryChooser.showDialog(btnSelectDir.getScene().getWindow());
         if(selectedDirectory != null) {
@@ -289,6 +274,9 @@ public class Controller implements Initializable {
                     String location = (temp.get("Location") == null) ? "" : temp.get("Location").toString().replace("\\", "\\\\");
                     String colNum = (temp.get("ColNum") == null) ? "" : temp.get("ColNum").toString();
                     String lineNum = (temp.get("LineNum") == null) ? "" : temp.get("LineNum").toString();
+                    String fields = (temp.get("Fields") == null) ? "" : temp.get("Fields").toString();
+                    fields = fields.substring(1, fields.length()-1);
+                    String[] fieldList = fields.split(",");
                     //temp.get("LineNum")
                     String neo4jCommand = "";
 

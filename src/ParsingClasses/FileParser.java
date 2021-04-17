@@ -127,57 +127,6 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         obj.put("InterfaceOrClass", ci.isInterface() ? "Interface" : "Class");
 
         res.add(obj);
-
-        //putting to graph DB (neo4j)
-        String interfaceOrClass = "";
-        if(ci.isInterface()){
-            interfaceOrClass = "Interface";
-        }else{
-            interfaceOrClass = "Class";
-        }
-        int hasextended = 0;
-        int hasImplemented = 0;
-        int implementedNum = implementedTypes.size();
-        String neo4jCommand = "MERGE (n:"+interfaceOrClass+" {name:\""+ci.getNameAsString()+"\"}) ";
-        //cek jika memiliki parent
-        if(!parent.equals("")){
-            neo4jCommand += "MERGE (parent:"+interfaceOrClass+" {name:\""+parent+"\"}) ";
-            neo4jCommand += "MERGE (n)-[:extends]->(parent) ";
-            //change flag
-            hasextended = 1;
-        }
-//        else{
-//            neo4jCommand += "RETURN n";
-//        }
-        //cek jika implements sesuatu
-        if(implementedNum > 0){
-            //change flag
-            hasImplemented = 1;
-            for(int i=0; i<implementedNum; i++){
-//                implementedArr.put(implementedTypes.get(i).getNameAsString());
-                neo4jCommand += "MERGE (implemented"+i+":Interface {name:\""+implementedTypes.get(i).getNameAsString()+"\"}) ";
-                neo4jCommand += "MERGE (n)-[:implements]->(implemented"+i+") ";
-            }
-        }
-
-        //FAILED
-//        for(int q=0; q<fieldsList.size(); q++) {
-//            String fieldName = fieldsList.get(q).asString();
-//            neo4jCommand += "MERGE (associated"+q+":Unknown {name:\""+fieldName+"\"}) ";
-//            neo4jCommand += "MERGE (n)-[:has]->(associated"+q+") ";
-//        }
-
-
-        session.run(neo4jCommand);
-//                "RETURN "+ci.getNameAsString());
-//        Result graph = session.run("MATCH (company:Company)-[:owns]-> (car:Car)" +
-//                "WHERE car.make='tesla' and car.model='modelX'" +
-//                "RETURN company.name");
-
-//        session.close();
-//        driver.close();
-
-
         return  res;
     }
 }

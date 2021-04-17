@@ -246,6 +246,11 @@ public class Controller implements Initializable {
         rd.close();
     }
 
+    public String fieldGetter(org.json.simple.JSONObject jsonObject, String field){
+
+        return "";
+    }
+
     public void chooseIndexing(ActionEvent actionEvent) throws IOException, ParseException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(new File(parsingResultLocation));
@@ -268,17 +273,54 @@ public class Controller implements Initializable {
                 for(int i=0; i<res.size(); i++){
                     org.json.simple.JSONObject temp = (org.json.simple.JSONObject) res.get(i);
                     //putting to graph DB (neo4j)
-//                    String interfaceOrClass = (temp.get("InterfaceOrClass").toString() == null) ? "" : temp.get("InterfaceOrClass").toString();
+                    String interfaceOrClass = (temp.get("InterfaceOrClass").toString() == null) ? "" : temp.get("InterfaceOrClass").toString();
+
                     String className = (temp.get("ClassName") == null) ? "" : temp.get("ClassName").toString();
-                    String  accessSpecifier = (temp.get("AccessSpecifier") == null) ? "" : temp.get("AccessSpecifier").toString();
+
+                    String accessSpecifier = (temp.get("AccessSpecifier") == null) ? "" : temp.get("AccessSpecifier").toString();
+
                     String location = (temp.get("Location") == null) ? "" : temp.get("Location").toString().replace("\\", "\\\\");
+
                     String colNum = (temp.get("ColNum") == null) ? "" : temp.get("ColNum").toString();
+
                     String lineNum = (temp.get("LineNum") == null) ? "" : temp.get("LineNum").toString();
+
                     String fields = (temp.get("Fields") == null) ? "" : temp.get("Fields").toString();
                     fields = fields.substring(1, fields.length()-1);
-                    String[] fieldList = fields.split(",");
+                    String[] fieldArr = fields.split(",");
+
+                    String implemented = (temp.get("Implements") == null) ? "" : temp.get("Implements").toString();
+                    implemented = implemented.substring(1, implemented.length()-1);
+                    String[] implementedArr = implemented.split(",");
+
+
+                    String parent = (temp.get("Parent") == null) ? "" : temp.get("Parent").toString();
+
+                    //initial insert Node
+                    //putting to graph DB (neo4j)
+
+                    String neo4jCommand = "MERGE (n:"+interfaceOrClass+" {name:\""+className+"\"}) ";
+
+                    //cek jika memiliki parent
+                    if(!parent.equals("")){
+                        neo4jCommand += "MERGE (parent:"+interfaceOrClass+" {name:\""+parent+"\"}) ";
+                        neo4jCommand += "MERGE (n)-[:extends]->(parent) ";
+                    }
+
+                    if(implementedArr.length > 0){
+
+                        for(int j=0; j<implementedArr.length; j++){
+                            if(implementedArr[j].length()>0){
+                                String iA = implementedArr[j].substring(1, implementedArr[j].length()-1);
+                                neo4jCommand += "MERGE (implemented"+j+":Interface {name:\""+iA+"\"}) ";
+                                neo4jCommand += "MERGE (n)-[:implements]->(implemented"+j+") ";
+                            }
+                        }
+                    }
+                    session.run(neo4jCommand);
+
                     //temp.get("LineNum")
-                    String neo4jCommand = "";
+//                    String neo4jCommand = "";
 
 
                     neo4jQuery = "MERGE (n {name: '"+className+"'}) "+

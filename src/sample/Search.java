@@ -1,5 +1,6 @@
 package sample;
 
+import ParsingClasses.SearchResultObject;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,6 +33,9 @@ public class Search {
     FXMLLoader loader = new FXMLLoader(getClass().getResource("search.fxml"));
 //    final SolrClient client;
     String core = "";
+    Vector<SearchResultObject> hasilPencarian = new Vector<>();
+    SearchResultObject firstResult = null;
+    Vector<SearchResultObject> hasilNeo4j = new Vector<>();
 
     //neo4j
     private Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "nepal-cartoon-flex-sport-tape-8099" ));
@@ -84,28 +88,33 @@ public class Search {
     public void searching() throws IOException, SolrServerException {
         final SolrClient client = getSolrClient();
         String inputKeyword = keyword.getText();
-        String firstResult = "";
 
         //SEARCHING SOLR
         final Map<String, String> queryParamMap = new HashMap<String, String>();
         //query
 
         queryParamMap.put("q", "ClassName:*"+inputKeyword+"*");
-        queryParamMap.put("fl", "ClassName, LineNum, ColNum, Parent, Implements");
+        queryParamMap.put("fl", "ClassName, LineNum, ColNum, Parent, Implements, Location");
         queryParamMap.put("rows", "999");
         MapSolrParams queryParams = new MapSolrParams(queryParamMap);
 
         final QueryResponse response = client.query(this.core, queryParams);
         final SolrDocumentList documents = response.getResults();
-        System.out.println("Found " + documents.getNumFound() + " documents");
         for(int x=0; x<documents.size(); x++) {
             String className = (String) documents.get(x).getFirstValue("ClassName");
-            if(x==0) firstResult = className;
+
             String colNum = Long.toString((Long) documents.get(x).getFirstValue("ColNum"));
             String lineNum = Long.toString((Long) documents.get(x).getFirstValue("LineNum"));
             String parent = "";
             String implemented = "";
+            String location = (String) documents.get(x).getFirstValue("Location");
 
+
+            if(x==0) {
+                firstResult = new SearchResultObject(className, location);
+            }else{
+                hasilPencarian.add(new SearchResultObject(className, location));
+            }
             //check parent
             if(documents.get(x).get("Parent") != null) {
                 parent = documents.get(x).get("Parent").toString();
@@ -122,35 +131,54 @@ public class Search {
                 for(int y=0; y<iArr.length; y++){
                     System.out.println(iArr[y]);
                 }
-//                this.implementsSearching(iArr);
 
             }
-            System.out.println("HASIL SOLR");
-            System.out.println("ClassName: "+className);
-//            System.out.println("Column Number: "+colNum);
-//            System.out.println("Line Number: "+lineNum);
-//            System.out.println();
-
             //safe
 //            System.out.println(document);
         }
         //SEARCHING GRAPH (neo4j)
-        String neo4jCommand = "MATCH (n {name :'"+firstResult+"' })-[*]-(connected)\n" +
-                "RETURN  n.name, connected.name, labels(n), labels(connected)";
+        String neo4jCommand = "MATCH (n {name :'"+firstResult.getClassName()+"' })-[*]-(connected)\n" +
+                "RETURN  n.name, n.location, connected.name, connected.location";
         Result graphResult = session.run(neo4jCommand);
+        //print raw graph result
+//        while(graphResult.hasNext()) {
+//            Map<String, Object> row = graphResult.next().asMap();
+//            System.out.println(row);
+//        }
+
+
+        //print hasil pencarian
+        Map<String, Object> firstRow = null;
+        if(graphResult.hasNext()){
+            firstRow = graphResult.next().asMap();
+            if(firstRow.get("n.name") != null && firstRow.get("n.location") != null){
+                hasilNeo4j.add(new SearchResultObject(firstRow.get("n.name").toString(), firstRow.get("n.location").toString()));
+            }
+            if(firstRow.get("connected.name") != null && firstRow.get("connected.location") != null) {
+                hasilNeo4j.add(new SearchResultObject(firstRow.get("connected.name").toString(), firstRow.get("connected.location").toString()));
+            }
+        }
         while(graphResult.hasNext()) {
             Map<String, Object> row = graphResult.next().asMap();
-            System.out.println("Result = " + row);
+            if(row.get("connected.name") != null && row.get("connected.location") != null) {
+                hasilNeo4j.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+            }
         }
 
-//        List<Record> c = graphResult.list();
-//        System.out.println("HASIL neo4j");
-//            for(int a=0; a<c.size(); a++){
-//                System.out.println(c.get(a).get("n"));
-//            }
-//        while(graphResult.hasNext()){
-//            System.out.println(graphResult.next());
-//        }
+        System.out.println("--------HASIL UTAMA--------");
+        System.out.println(firstResult.getClassName());
+        System.out.println(firstResult.getLocation());
+        System.out.println("--------HASIL NEO4J--------");
+        for(int j=0; j<hasilNeo4j.size(); j++){
+            System.out.println(hasilNeo4j.get(j).getClassName());
+            System.out.println(hasilNeo4j.get(j).getLocation());
+        }
+        System.out.println("--------HASIL SISA SOLR--------");
+        for(int j=0; j<hasilPencarian.size(); j++){
+            System.out.println(hasilPencarian.get(j).getClassName());
+            System.out.println(hasilPencarian.get(j).getLocation());
+        }
+
     }
 
     public void parentSearching(String parent){

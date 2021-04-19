@@ -204,6 +204,7 @@ public class Settings implements Initializable {
         if(json.size()==0){
 
         }else{
+            coreOptions.setValue(json.keySet().toArray()[0]);
             for(int i=0; i<json.size(); i++){
                 coreOptions.getItems().add(json.keySet().toArray()[i]);
                 deleteOptions.getItems().add(json.keySet().toArray()[i]);
@@ -215,7 +216,7 @@ public class Settings implements Initializable {
 
     public void createCore() throws IOException, ParseException, InterruptedException {
 //        solr create -c sbaru
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+ solrPath.getText().substring(0,2) +" && cd "+ solrPath.getText()+"\\bin && solr create -c "+createName.getText()+" && exit\"");
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \" c: && "+ solrPath.getText().substring(0,2) +" && cd "+ solrPath.getText()+"\\bin && solr create -c "+createName.getText()+" && exit\"");
         coreOptions.getItems().clear();
         deleteOptions.getItems().clear();
         Thread.sleep(4000);

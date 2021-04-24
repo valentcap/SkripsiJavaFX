@@ -47,6 +47,10 @@ public class Settings implements Initializable {
     private TextField createName;
     @FXML
     private Label activeCore;
+    @FXML
+    private Label neo4jPath;
+    @FXML
+    private Button setNeo4jPath;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -80,6 +84,9 @@ public class Settings implements Initializable {
             prop.setProperty("activeCore", aCore);
             activeCore.setText(aCore);
 
+            Path neo4jP = Paths.get(neo4jPath.getText());
+            prop.setProperty("neo4jPath", neo4jP.toString());
+
             // save properties to project root folder
             prop.store(output, null);
 
@@ -108,6 +115,8 @@ public class Settings implements Initializable {
             solrPath.setText(res);
             res = prop.getProperty("activeCore");
             activeCore.setText(res);
+            res = prop.getProperty("neo4jPath");
+            neo4jPath.setText(res);
         } catch (IOException io) {
             io.printStackTrace();
         }
@@ -171,6 +180,22 @@ public class Settings implements Initializable {
         File selectedDirectory = directoryChooser.showDialog(setSolrPath.getScene().getWindow());
         res = selectedDirectory.getAbsolutePath();
         this.solrPath.setText(res);
+    }
+
+    public void setNeo4jPath(ActionEvent actionEvent) {
+        String res = "";
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        String def = "";
+        if(!neo4jPath.getText().equals("")){
+            def = neo4jPath.getText();
+            directoryChooser.setInitialDirectory(new File(def));
+        }else{
+            directoryChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        }
+
+        File selectedDirectory = directoryChooser.showDialog(setNeo4jPath.getScene().getWindow());
+        res = selectedDirectory.getAbsolutePath();
+        this.neo4jPath.setText(res);
     }
 
     public void getSolrCores() throws IOException, ParseException {

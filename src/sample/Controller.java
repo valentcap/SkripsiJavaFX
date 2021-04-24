@@ -72,7 +72,7 @@ public class Controller implements Initializable {
 
     public void startSolr() throws IOException, InterruptedException, ParseException {
         //start solr
-        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+solrpath.substring(0,2) +" && cd "+solrpath+" && solr start -p 8983\"");
+        Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+solrpath.substring(0,2) +" && cd "+solrpath+"\\bin && solr start -p 8983\"");
     }
 
     public void getSettings(){
@@ -345,7 +345,7 @@ public class Controller implements Initializable {
     public void startNeo4jService() throws IOException, InterruptedException {
         //start neo4j
         Runtime.getRuntime().exec("cmd /c start cmd.exe /K \""+neo4jPath.substring(0,2) +" && cd "+neo4jPath+" && neo4j console\"");
-//        Thread.sleep(10000);
+//        Thread.sleep(10000);p
         driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "nepal-cartoon-flex-sport-tape-8099" ));
 
 

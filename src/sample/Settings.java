@@ -137,7 +137,7 @@ public class Settings implements Initializable {
         String res = "";
         DirectoryChooser directoryChooser = new DirectoryChooser();
         String def = "";
-        if(!installLocation.getText().equals("")){
+        if(installLocation.getText() != null){
             def = installLocation.getText();
             directoryChooser.setInitialDirectory(new File(def));
         }else{
@@ -154,7 +154,7 @@ public class Settings implements Initializable {
         String res = "";
         DirectoryChooser directoryChooser = new DirectoryChooser();
         String def = "";
-        if(!parsingResultLocation.getText().equals("")){
+        if(parsingResultLocation.getText() != null){
             def = parsingResultLocation.getText();
             directoryChooser.setInitialDirectory(new File(def));
         }else{
@@ -170,7 +170,7 @@ public class Settings implements Initializable {
         String res = "";
         DirectoryChooser directoryChooser = new DirectoryChooser();
         String def = "";
-        if(!solrPath.getText().equals("")){
+        if(solrPath.getText() != null){
             def = solrPath.getText();
             directoryChooser.setInitialDirectory(new File(def));
         }else{
@@ -186,7 +186,7 @@ public class Settings implements Initializable {
         String res = "";
         DirectoryChooser directoryChooser = new DirectoryChooser();
         String def = "";
-        if(!neo4jPath.getText().equals("")){
+        if(neo4jPath.getText() != null){
             def = neo4jPath.getText();
             directoryChooser.setInitialDirectory(new File(def));
         }else{

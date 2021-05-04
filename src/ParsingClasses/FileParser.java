@@ -2,7 +2,6 @@ package ParsingClasses;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -10,7 +9,7 @@ import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericListVisitorAdapter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.neo4j.driver.*;
+import org.neo4j.driver.Session;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -101,25 +100,25 @@ public class FileParser extends GenericListVisitorAdapter<JSONObject, Void> {
         obj.put("Implements", implementedArr);
 
         //constructors
-        JSONArray arrConstructor = new JSONArray();
-
-        List<ConstructorDeclaration> constructors = ci.getConstructors();
-        for(int i=0; i<ci.getConstructors().size(); i++){
-            JSONObject objConstructor = new JSONObject();
-            JSONArray params = new JSONArray();
-            constructors.get(i).getParameters();
-            int paramSize = constructors.get(i).getParameters().size();
-
-            for(int j=0; j<paramSize; j++){
-                params.put(constructors.get(i).getParameters().get(j));
-            }
-//            JSONArray sub = new JSONArray();
-//            sub.put(params);
-//            objConstructor.put("Params", sub);
-            objConstructor.put("Params", params);
-            arrConstructor.put(objConstructor);
-        }
-        obj.put("Constructors", arrConstructor);
+//        JSONArray arrConstructor = new JSONArray();
+//
+//        List<ConstructorDeclaration> constructors = ci.getConstructors();
+//        for(int i=0; i<ci.getConstructors().size(); i++){
+//            JSONObject objConstructor = new JSONObject();
+//            JSONArray params = new JSONArray();
+//            constructors.get(i).getParameters();
+//            int paramSize = constructors.get(i).getParameters().size();
+//
+//            for(int j=0; j<paramSize; j++){
+//                params.put(constructors.get(i).getParameters().get(j));
+//            }
+////            JSONArray sub = new JSONArray();
+////            sub.put(params);
+////            objConstructor.put("Params", sub);
+//            objConstructor.put("Params", params);
+//            arrConstructor.put(objConstructor);
+//        }
+//        obj.put("Constructors", arrConstructor);
 
         //location
         obj.put("Location", this.codePath.toString());

@@ -246,11 +246,6 @@ public class Controller implements Initializable {
         rd.close();
     }
 
-    public String fieldGetter(org.json.simple.JSONObject jsonObject, String field){
-
-        return "";
-    }
-
     public void chooseIndexing(ActionEvent actionEvent) throws IOException, ParseException {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(new File(parsingResultLocation));

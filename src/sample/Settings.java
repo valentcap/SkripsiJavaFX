@@ -10,6 +10,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.json.simple.parser.JSONParser;
@@ -51,10 +54,13 @@ public class Settings implements Initializable {
     private Label neo4jPath;
     @FXML
     private Button setNeo4jPath;
+    @FXML
+    private Text title;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         this.getSettings();
+        this.title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
         try {
             this.getSolrCores();
         } catch (IOException e) {
@@ -230,6 +236,7 @@ public class Settings implements Initializable {
 
         }else{
             coreOptions.setValue(json.keySet().toArray()[0]);
+            deleteOptions.setValue(json.keySet().toArray()[0]);
             for(int i=0; i<json.size(); i++){
                 coreOptions.getItems().add(json.keySet().toArray()[i]);
                 deleteOptions.getItems().add(json.keySet().toArray()[i]);

@@ -11,7 +11,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -40,8 +39,6 @@ public class Controller implements Initializable {
 
     @FXML
     private Button btnSelectDir;
-    @FXML
-    private Label path;
     @FXML
     private TextField projectName;
     @FXML
@@ -180,7 +177,6 @@ public class Controller implements Initializable {
         File selectedDirectory = directoryChooser.showDialog(btnSelectDir.getScene().getWindow());
 
         if(selectedDirectory != null) {
-            path.setText(selectedDirectory.getAbsolutePath());
             showFiles(selectedDirectory.listFiles());
 //            this.session.close();
 //            this.driver.close();

@@ -15,6 +15,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -72,12 +74,7 @@ public class Search extends Application {
 
         //constructor
     public Search() throws IOException, SolrServerException, ParseException {
-//        client = this.getSolrClient();
-//        this.addDocument();
-//        this.searching();
-//        this.getSolrCores();
         this.getSettings();
-//        this.addDocument();
     }
 
     @Override
@@ -85,26 +82,6 @@ public class Search extends Application {
 
     }
 
-
-    //add document manual
-    public void addDocument() throws IOException, SolrServerException {
-        final SolrClient client = getSolrClient();
-
-        final SolrInputDocument doc = new SolrInputDocument();
-        doc.addField("id", "D");
-        doc.addField("foo", 20);
-        doc.addField("out_edge", "4");
-        doc.addField("out_edge", "7");
-
-        doc.addField("in_edge", "3");
-        doc.addField("in_edge", "5");
-
-
-
-        final UpdateResponse updateResponse = client.add(this.core,doc);
-// Indexed documents must be committed
-        client.commit("project");
-    }
 
     public HttpSolrClient getSolrClient(){
         final String solrUrl = "http://localhost:8983/solr";
@@ -125,6 +102,7 @@ public class Search extends Application {
         final SolrClient client = getSolrClient();
         String inputKeyword = keyword.getText();
         String[] inputs = inputKeyword.split(",");
+        Vector<String> neo4jClassNames = new Vector<>();
 
         //method info (name & return)
         String methodNameSearch = "";
@@ -222,26 +200,19 @@ public class Search extends Application {
             Result graphResult2 = session.run(neo4jCommand2);
 
             //print hasil pencarian
-            Map<String, Object> firstRow = null;
-//        if(graphResult.hasNext()){
-//            firstRow = graphResult.next().asMap();
-//            if(firstRow.get("n.name") != null && firstRow.get("n.location") != null){
-//                hasilNeo4j.add(new SearchResultObject(firstRow.get("n.name").toString(), firstRow.get("n.location").toString()));
-//            }
-//            if(firstRow.get("connected.name") != null && firstRow.get("connected.location") != null) {
-//                hasilNeo4j.add(new SearchResultObject(firstRow.get("connected.name").toString(), firstRow.get("connected.location").toString()));
-//            }
-//        }
+
             while(graphResult.hasNext()) {
                 Map<String, Object> row = graphResult.next().asMap();
                 if(row.get("connected.name") != null && row.get("connected.location") != null) {
                     hasilNeo4j.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+                    neo4jClassNames.add(row.get("connected.name").toString());
                 }
             }
             while(graphResult2.hasNext()) {
                 Map<String, Object> row = graphResult2.next().asMap();
                 if(row.get("connected.name") != null && row.get("connected.location") != null) {
                     hasilNeo4j.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+                    neo4jClassNames.add(row.get("connected.name").toString());
                 }
             }
         }
@@ -249,16 +220,16 @@ public class Search extends Application {
         if(firstResult != null){
             System.out.println("--------HASIL UTAMA--------");
             System.out.println(firstResult.getClassName());
-            System.out.println(firstResult.getLocation());
+//            System.out.println(firstResult.getLocation());
             System.out.println("--------HASIL NEO4J--------");
             for(int j=0; j<hasilNeo4j.size(); j++){
                 System.out.println(hasilNeo4j.get(j).getClassName());
-                System.out.println(hasilNeo4j.get(j).getLocation());
+//                System.out.println(hasilNeo4j.get(j).getLocation());
             }
             System.out.println("--------HASIL NEXT SOLR--------");
             for(int j=0; j<hasilPencarian.size(); j++){
                 System.out.println(hasilPencarian.get(j).getClassName());
-                System.out.println(hasilPencarian.get(j).getLocation());
+//                System.out.println(hasilPencarian.get(j).getLocation());
             }
 
 
@@ -271,6 +242,14 @@ public class Search extends Application {
             tableView.getColumns().add(column1);
             tableView.getColumns().add(column2);
             tableView.getItems().add(firstResult);
+            for(int a=0; a<hasilPencarian.size(); a++){
+                //remove duplicates search result
+                if(neo4jClassNames.contains(hasilPencarian.get(a).getClassName())){
+                    //
+                }else {
+                    tableView.getItems().add(hasilPencarian.get(a));
+                }
+            }
             tableView.setOnMouseClicked(eventHandlerMain);
             tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
@@ -287,38 +266,31 @@ public class Search extends Application {
             tableViewRelated.getColumns().add(column3);
             tableViewRelated.getColumns().add(column4);
             for(int a=0; a<hasilNeo4j.size(); a++){
+                SearchResultObject sro = hasilNeo4j.get(a);
                 tableViewRelated.getItems().add(hasilNeo4j.get(a));
             }
             tableViewRelated.setOnMouseClicked(eventHandlerRelated);
             tableViewRelated.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-            tableViewNext.getColumns().add(column5);
-            tableViewNext.getColumns().add(column6);
-            for(int a=0; a<hasilPencarian.size(); a++){
-                tableViewNext.getItems().add(hasilPencarian.get(a));
-            }
+//            tableViewNext.getColumns().add(column5);
+//            tableViewNext.getColumns().add(column6);
+//            for(int a=0; a<hasilPencarian.size(); a++){
+//                tableViewNext.getItems().add(hasilPencarian.get(a));
+//            }
             tableViewNext.setOnMouseClicked(eventHandlerNext);
             tableViewNext.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-//            VBox vbox = new VBox(listView);
-//            searchResultArea.getChildren().add(classNameList);
 
             mainLabel.setTextFill(Paint.valueOf("#00ff00"));
             mainLabel.setStyle("-fx-font: 14 arial");
             mainLabel.setPadding(new Insets(5, 5, 5, 5));
             searchResultArea.getChildren().add(mainLabel);
-//            searchResultArea.getChildren().add(listView);
             searchResultArea.getChildren().add(tableView);
+            relatedLabel.setText("Class/Interface yang Berelasi dengan " + firstResult.getClassName());
             relatedLabel.setTextFill(Paint.valueOf("#00ff00"));
             relatedLabel.setStyle("-fx-font: 14 arial");
             relatedLabel.setPadding(new Insets(5, 5, 5, 5));
             searchResultArea.getChildren().add(relatedLabel);
-//            searchResultArea.getChildren().add(listViewRelated);
             searchResultArea.getChildren().add(tableViewRelated);
-            nextLabel.setTextFill(Paint.valueOf("#00ff00"));
-            nextLabel.setStyle("-fx-font: 14 arial");
-            nextLabel.setPadding(new Insets(5, 5, 5, 5));
-            searchResultArea.getChildren().add(nextLabel);
-            searchResultArea.getChildren().add(tableViewNext);
 
             int x = firstResult == null ? (1 + hasilNeo4j.size() + hasilPencarian.size()) : 0;
             docNum.setText(x == 0 ? "" : x + " documents retieved");
@@ -327,6 +299,11 @@ public class Search extends Application {
             System.out.println("----------+-----------");
             System.out.println("Tidak Ditemukan Hasil");
             System.out.println("----------+-----------");
+
+            Label noResult = new Label("Tidak ditemukan hasil pencarian");
+            noResult.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+            noResult.setPadding(new Insets(0, 0, 0, 110));
+            searchResultArea.getChildren().add(noResult);
         }
 
     }
@@ -336,20 +313,69 @@ public class Search extends Application {
         public void handle(MouseEvent e) {
             SearchResultObject temp = (SearchResultObject) tableView.getSelectionModel().getSelectedItem();
             String x = temp.getLocation();
-            selectSearch(x);
+            if(e.getClickCount() == 2){
+                selectSearch(x);
+            }
+            tableViewRelated.getItems().clear();
+            tableViewRelated.getColumns().clear();
+            searchResultArea.getChildren().clear();
+
+            TableColumn<SearchResultObject, String> column7 = new TableColumn<>("Nama Class yang Berelasi");
+            column7.setCellValueFactory(new PropertyValueFactory<>("className"));
+            TableColumn<SearchResultObject, String> column8 = new TableColumn<>("Lokasi File yang Berelasi");
+            column8.setCellValueFactory(new PropertyValueFactory<>("location"));
+            tableViewRelated.getColumns().add(column7);
+            tableViewRelated.getColumns().add(column8);
+            tableViewRelated.setOnMouseClicked(eventHandlerRelated);
+            tableViewRelated.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+            String neo4jCommand = "MATCH (n {name :'"+temp.getClassName()+"' })-[*]->(connected)\n" +
+                    "RETURN  n.name, n.location, connected.name, connected.location";
+            Result graphRes = session.run(neo4jCommand);
+
+            String neo4jCommand2 = "MATCH (n {name :'"+temp.getClassName()+"' })<-[*]-(connected)\n" +
+                    "RETURN  n.name, n.location, connected.name, connected.location";
+            Result graphRes2 = session.run(neo4jCommand2);
+
+            Vector<SearchResultObject> hasilReSearch= new Vector<>();
+            while(graphRes.hasNext()) {
+                Map<String, Object> row = graphRes.next().asMap();
+                if(row.get("connected.name") != null && row.get("connected.location") != null) {
+                    hasilReSearch.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+                }
+            }
+            while(graphRes2.hasNext()) {
+                Map<String, Object> row = graphRes2.next().asMap();
+                if(row.get("connected.name") != null && row.get("connected.location") != null) {
+                    hasilReSearch.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+                }
+            }
+
+
+            for(int a=0; a<hasilReSearch.size(); a++){
+                tableViewRelated.getItems().add(hasilReSearch.get(a));
+            }
+            searchResultArea.getChildren().add(mainLabel);
+            searchResultArea.getChildren().add(tableView);
+            searchResultArea.getChildren().add(relatedLabel);
+            relatedLabel.setText("Class/Interface yang Berelasi dengan " + temp.getClassName());
+            searchResultArea.getChildren().add(tableViewRelated);
         }
     };
     EventHandler<MouseEvent> eventHandlerRelated = new EventHandler<MouseEvent>() {
         @Override
         public void handle(MouseEvent e) {
-            SearchResultObject temp = (SearchResultObject) tableViewRelated.getSelectionModel().getSelectedItem();
-            String x = temp.getLocation();
-            selectSearch(x);
+            if(e.getClickCount() == 2) {
+                SearchResultObject temp = (SearchResultObject) tableViewRelated.getSelectionModel().getSelectedItem();
+                String x = temp.getLocation();
+                selectSearch(x);
+            }
         }
     };
     EventHandler<MouseEvent> eventHandlerNext = new EventHandler<MouseEvent>() {
         @Override
         public void handle(MouseEvent e) {
+
             SearchResultObject temp = (SearchResultObject) tableViewNext.getSelectionModel().getSelectedItem();
             String x = temp.getLocation();
             selectSearch(x);

@@ -162,16 +162,27 @@ public class Search extends Application {
             int isQualified = 0;
             //cocokkan dengan query
             if(methodNameSearch != "" && methodReturnSearch != ""){
-                for(int i=0; i< methods.size(); i++){
+                for(int i=0; i< methods.size(); i++) {
                     //cek jika cocok
-                    if(methodNameSearch.equalsIgnoreCase(methods.get(i)) && methodReturnSearch.equalsIgnoreCase(methodsReturn.get(i))){
+                    String methodNameSearchTemp = methodNameSearch.replace("*", "").toLowerCase();
+                    String methodReturnSearchTemp = methodReturnSearch.replace("*", "").toLowerCase();
+                    if (methods.get(i).toLowerCase().contains(methodNameSearchTemp) && methodsReturn.get(i).toLowerCase().contains(methodReturnSearchTemp)) {
                         //urutan tampilan, first result -> hasil neo4j, hasilPencarian
-                        if(x==0) {
+                        if (x == 0) {
                             firstResult = new SearchResultObject(className, location);
-                        }else{
+                        } else {
+                            boolean flag = true;
+                            for(int iter = 0; iter < hasilPencarian.size(); iter++){
+                                if(hasilPencarian.get(iter).getClassName().equals(className)) {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                            if(flag)
                             hasilPencarian.add(new SearchResultObject(className, location));
+
                         }
-                    }else{
+                    } else {
 //                        System.out.println(methods.get(i));
 //                        System.out.println(methodsReturn.get(i));
                     }
@@ -181,7 +192,15 @@ public class Search extends Application {
                 if(x==0) {
                     firstResult = new SearchResultObject(className, location);
                 }else{
-                    hasilPencarian.add(new SearchResultObject(className, location));
+                    boolean flag = true;
+                    for(int iter = 0; iter < hasilPencarian.size(); iter++){
+                        if(hasilPencarian.get(iter).getClassName().equals(className)) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if(flag)
+                        hasilPencarian.add(new SearchResultObject(className, location));
                 }
             }
 
@@ -206,12 +225,20 @@ public class Search extends Application {
                 if(row.get("connected.name") != null && row.get("connected.location") != null) {
                     hasilNeo4j.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
                     neo4jClassNames.add(row.get("connected.name").toString());
+                }else{
+                    String x = "Class/Interface Diluar Repository";
+                    hasilNeo4j.add(new SearchResultObject(row.get("connected.name").toString(), x));
+                    neo4jClassNames.add(row.get("connected.name").toString());
                 }
             }
             while(graphResult2.hasNext()) {
                 Map<String, Object> row = graphResult2.next().asMap();
                 if(row.get("connected.name") != null && row.get("connected.location") != null) {
                     hasilNeo4j.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+                    neo4jClassNames.add(row.get("connected.name").toString());
+                }else{
+                    String x = "Class/Interface Diluar Repository";
+                    hasilNeo4j.add(new SearchResultObject(row.get("connected.name").toString(), x));
                     neo4jClassNames.add(row.get("connected.name").toString());
                 }
             }
@@ -322,7 +349,7 @@ public class Search extends Application {
 
             TableColumn<SearchResultObject, String> column7 = new TableColumn<>("Nama Class yang Berelasi");
             column7.setCellValueFactory(new PropertyValueFactory<>("className"));
-            TableColumn<SearchResultObject, String> column8 = new TableColumn<>("Lokasi File yang Berelasi");
+            TableColumn<SearchResultObject, String> column8 = new TableColumn<>("Lokasi File");
             column8.setCellValueFactory(new PropertyValueFactory<>("location"));
             tableViewRelated.getColumns().add(column7);
             tableViewRelated.getColumns().add(column8);
@@ -342,12 +369,18 @@ public class Search extends Application {
                 Map<String, Object> row = graphRes.next().asMap();
                 if(row.get("connected.name") != null && row.get("connected.location") != null) {
                     hasilReSearch.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+                }else{
+                    String str = "Class/Interface Diluar Repository";
+                    hasilReSearch.add(new SearchResultObject(row.get("connected.name").toString(), str));
                 }
             }
             while(graphRes2.hasNext()) {
                 Map<String, Object> row = graphRes2.next().asMap();
                 if(row.get("connected.name") != null && row.get("connected.location") != null) {
                     hasilReSearch.add(new SearchResultObject(row.get("connected.name").toString(), row.get("connected.location").toString()));
+                }else{
+                    String str = "Class/Interface Diluar Repository";
+                    hasilReSearch.add(new SearchResultObject(row.get("connected.name").toString(), str));
                 }
             }
 
@@ -383,9 +416,13 @@ public class Search extends Application {
     };
 
     public void selectSearch(String fileLocation){
-        File file = new File(fileLocation);
-        HostServices hostServices = getHostServices();
-        hostServices.showDocument(file.getAbsolutePath());
+        if(fileLocation.equals("Class/Interface Diluar Repository")){
+
+        }else {
+            File file = new File(fileLocation);
+            HostServices hostServices = getHostServices();
+            hostServices.showDocument(file.getAbsolutePath());
+        }
     }
 
     public void getSettings(){
